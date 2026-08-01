@@ -1,16 +1,16 @@
 services:
   - type: web
-    name: my-school-bw-c0gh
+    name: myschoolbw-api
     runtime: node
     plan: starter
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 3001
       - key: MONGODB_URI
-        sync: false
+        sync: false  # ← THIS IS IMPORTANT! Set it manually in dashboard
       - key: JWT_SECRET
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
+        sync: false  # ← THIS IS IMPORTANT! Set it manually in dashboard
