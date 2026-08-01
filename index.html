@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ===== OVERRIDES for index.html ===== */
+        
+        /* Force topnav to stay above everything */
+        .topnav {
+            z-index: 1000 !important;
+            position: relative;
+            overflow: visible !important;
+        }
+        .dropdown-content {
+            z-index: 9999 !important;
+        }
+        .container {
+            overflow: visible !important;
+        }
+
+        /* ---- DROPDOWN: Click to open, stays open until clicked again ---- */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown .dropbtn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 0.8rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 40px;
+            font-family: 'Inter', sans-serif;
+        }
+        .dropdown .dropbtn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .dropdown .dropbtn.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .dropdown .dropbtn .caret {
+            display: inline-block;
+            margin-left: 4px;
+            font-size: 0.7rem;
+            transition: transform 0.3s ease;
+            color: var(--text-muted);
+        }
+        .dropdown .dropbtn.active .caret {
+            transform: rotate(180deg);
+            color: #ffffff;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 120%;
+            left: 0;
+            min-width: 220px;
+            background: rgba(10, 10, 10, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-glass-strong);
+            border-radius: var(--radius);
+            padding: 0.6rem 0;
+            box-shadow: var(--shadow-soft);
+        }
+        .dropdown-content.show {
+            display: block;
+            animation: dropFade 0.2s ease;
+        }
+        @keyframes dropFade {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-content a {
+            font-weight: 400;
+            padding: 0.6rem 1.5rem;
+            display: block;
+            border-left: 2px solid transparent;
+            color: var(--text-muted);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+        .dropdown-content a:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-left-color: #ffffff;
+            color: #ffffff;
+        }
+
+        /* ---- Featured Slider – 3 items per slide ---- */
+        .featured-slider {
+            position: relative;
+            margin: 2rem 0 2.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-glass);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 0;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .featured-track {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+        .featured-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+            padding: 1.2rem;
+        }
+        .featured-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 1.2rem 0.8rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .featured-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-glow-white);
+        }
+        .featured-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: contain;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .featured-card .name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+        .featured-card .price {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+        .featured-card .price small {
+            font-weight: 400;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-left: 0.4rem;
+        }
+        .featured-card .btn-sm {
+            margin-top: 0.5rem;
+            padding: 0.3rem 1.2rem;
+            font-size: 0.8rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .featured-card .btn-sm:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .featured-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.75) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            color: #ffffff !important;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 999;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 2rem !important;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .featured-btn:hover {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 0 40px rgba(255,255,255,0.15);
+        }
+        .featured-btn.prev { left: 12px; }
+        .featured-btn.next { right: 12px; }
+
+        .featured-dots {
+            text-align: center;
+            padding: 0.8rem 0 0.2rem;
+        }
+        .featured-dots .dot {
+            height: 12px;
+            width: 12px;
+            margin: 0 6px;
+            background: rgba(255,255,255,0.25) !important;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .featured-dots .dot.active {
+            background: #ffffff !important;
+            transform: scale(1.4);
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+            border-color: #ffffff;
+        }
+
+        #login-form, #signup-form, #forgot-password-form {
+            max-width: 480px;
+            margin: 2rem auto;
+            padding: 2rem 2.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+        }
+        #login-form h2, #signup-form h2, #forgot-password-form h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+        .form-group button {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group button:hover {
+            background: #fff;
+            color: #000;
+        }
+        .form-switch {
+            text-align: center;
+            margin-top: 1.2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .form-switch a {
+            color: #ffffff;
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: var(--transition);
+        }
+        .form-switch a:hover {
+            border-bottom-color: #ffffff;
+        }
+        .show-password {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-muted) !important;
+            font-size: 0.8rem !important;
+            padding: 0.3rem 0 !important;
+            cursor: pointer;
+            transition: var(--transition);
+            width: auto !important;
+        }
+        .show-password:hover {
+            color: #ffffff !important;
+            background: transparent !important;
+        }
+        .error-message {
+            color: #fca5a5;
+            font-size: 0.8rem;
+            display: none;
+            margin-top: 0.3rem;
+        }
+        .alert {
+            padding: 0.8rem 1.2rem;
+            border-radius: 40px;
+            margin: 0.8rem 0;
+            display: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .alert-info {
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+
+        @media (max-width: 992px) {
+            .featured-slide {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            #login-form, #signup-form, #forgot-password-form {
+                padding: 1.5rem 1.2rem;
+                margin: 1rem auto;
+            }
+            .topnav {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+                padding: 0.8rem 1rem;
+            }
+            .topnav a, .topnav .dropbtn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.85rem;
+            }
+            .dropdown-content {
+                position: static;
+            }
+        }
+        @media (max-width: 600px) {
+            .featured-slide {
+                grid-template-columns: 1fr;
+            }
+            .featured-card img {
+                height: 120px;
+            }
+            .featured-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1.4rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="container">
+        <!-- ===== TOP NAVIGATION ===== -->
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <a href="index.html">HOME</a>
+            <a href="registration.html">REGISTRATION</a>
+            <a href="account.html">MY ACCOUNT</a>
+            <a href="level.html">EDUCATION LEVELS</a>
+            <a href="subjects.html">ENROLLMENT</a>
+            <a href="tests.html">QUICK TESTS</a>
+            <a href="administration.html">ADMINISTRATION</a>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <!-- ===== INTRO TEXT ===== -->
+        <div class="intro-container">
+            <h4><div class="brand">MY<span>SCHOOL</span>BW</div>
+            <br><p>Welcome to MY SCHOOL BW. This is a website where we offer best education and innovation services all for our childrens futures
+            Our ambition in mind is to help our dear parents with the educational life of their children, in short this website is going to be  
+            your number one trusted source for a better education service, which will offer your child with efficient and more noticeable educational 
+            progress.</p>
+            </h4>
+
+            <h4>
+            <p>Before we jump in, below is a registration form for all the parents that want to join us, 
+            You can view our website by creating an account with us,
+            <br>NB: This account creation and login is for parents. The children registration is within the website. THANK YOU</p>
+            </h4>
+        </div>
+
+        <!-- ===== LOGIN FORM ===== -->
+        <div id="login-form">
+            <h2>Login</h2>
+            <div class="alert alert-danger" id="loginAlert" style="display:none;"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" name="email" placeholder="your@email.com" autocomplete="username" required>
+                    <span class="error-message" id="login-email-error">Please enter a valid email.</span>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+                    <button type="button" class="show-password" onclick="togglePassword('login-password')">Show Password</button>
+                    <span class="error-message" id="login-password-error">Password must be at least 8 characters.</span>
+                </div>
+                <input type="hidden" id="login-school-id" value="">
+                <div class="form-group" id="schoolDisplay" style="text-align:center; padding:0.5rem; background:rgba(255,255,255,0.03); border-radius:40px; border:1px solid var(--border-glass);">
+                    <span style="color:var(--text-muted);">🏫 School: </span>
+                    <span id="currentSchoolName" style="font-weight:600; color:var(--text-primary);">Not selected</span>
+                    <button type="button" onclick="changeSchool()" style="background:transparent; border:none; color:#60A5FA; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Change</button>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Login</button>
+                </div>
+                <div class="form-switch">
+                    <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+                </div>
+                <div class="form-switch">
+                    Don't have an account? <a href="#" onclick="showSignup()">Sign up</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- ===== SIGNUP FORM ===== -->
+        <div id="signup-form" style="display:none;">
+            <h2>Sign Up</h2>
+            <div class="alert alert-info" id="signupAlert" style="display:none;"></div>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signup-username">Full Name</label>
+                    <input type="text" id="signup-username" name="username" placeholder="John Doe" autocomplete="name" required>
+                    <span class="error-message" id="signup-username-error">Please enter your full name.</span>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" name="email" placeholder="your@email.com" autocomplete="email" required>
+                    <span class="error-message" id="signup-email-error">Please enter a valid email.</span>
+                </div>
+                <div class="form-group">
+                    <label for="signup-phone">Phone Number</label>
+                    <input type="tel" id="signup-phone" name="phone" placeholder="+267 72 123 456" autocomplete="tel" required>
+                    <span class="error-message" id="signup-phone-error">Please enter a valid phone number.</span>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" placeholder="••••••••" autocomplete="new-password" required>
+                    <button type="button" class="show-password" onclick="togglePassword('signup-password')">Show Password</button>
+                    <span class="error-message" id="signup-password-error">Password must be 8+ with a number and special character.</span>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" placeholder="••••••••" autocomplete="new-password" required>
+                    <button type="button" class="show-password" onclick="togglePassword('confirm-password')">Show Password</button>
+                    <span class="error-message" id="confirm-password-error">Passwords do not match.</span>
+                </div>
+                <div class="form-group" id="schoolDisplay" style="text-align:center; padding:0.5rem; background:rgba(255,255,255,0.03); border-radius:40px; border:1px solid var(--border-glass);">
+                    <span style="color:var(--text-muted);">🏫 School: </span>
+                    <span id="currentSchoolName" style="font-weight:600; color:var(--text-primary);">Not selected</span>
+                    <button type="button" onclick="changeSchool()" style="background:transparent; border:none; color:#60A5FA; cursor:pointer; font-size:0.8rem; text-decoration:underline;">Change</button>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Create Account</button>
+                </div>
+                <div class="form-switch">
+                    Already have an account? <a href="#" onclick="showLogin()">Login</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- ===== FORGOT PASSWORD FORM ===== -->
+        <div id="forgot-password-form" style="display:none;">
+            <h2>Reset Password</h2>
+            <div class="alert alert-info" id="forgotAlert" style="display:none;"></div>
+            <form id="forgotPasswordForm">
+                <div class="step active" id="step1">
+                    <div class="form-group">
+                        <label for="forgot-email">Email</label>
+                        <input type="email" id="forgot-email" name="email" placeholder="your@email.com" autocomplete="email" required>
+                        <span class="error-message" id="forgot-email-error">Please enter a valid email.</span>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" onclick="sendResetCode()">Send Verification Code</button>
+                    </div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="form-group">
+                        <label for="reset-code">Verification Code</label>
+                        <input type="text" id="reset-code" name="code" placeholder="6-digit code" required>
+                        <span class="error-message" id="reset-code-error">Invalid or expired code.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" name="password" placeholder="••••••••" autocomplete="new-password" required>
+                        <button type="button" class="show-password" onclick="togglePassword('new-password')">Show Password</button>
+                        <span class="error-message" id="new-password-error">Password must be 8+ with a number and special character.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-new-password">Confirm New Password</label>
+                        <input type="password" id="confirm-new-password" name="confirm-password" placeholder="••••••••" autocomplete="new-password" required>
+                        <button type="button" class="show-password" onclick="togglePassword('confirm-new-password')">Show Password</button>
+                        <span class="error-message" id="confirm-new-password-error">Passwords do not match.</span>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" onclick="resetPassword()">Reset Password</button>
+                    </div>
+                </div>
+            </form>
+            <div class="form-switch">
+                <a href="#" onclick="showLogin()">Back to Login</a>
+            </div>
+        </div>
+
+        <!-- ===== VERIFICATION MODAL ===== -->
+        <div id="verificationModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); z-index:9999; align-items:center; justify-content:center;">
+            <div style="max-width:420px; padding:2rem; background:rgba(10,10,30,0.95); border:1px solid var(--border-glass); border-radius:var(--radius); box-shadow:var(--shadow-soft);">
+                <h2 style="text-align:center; margin-bottom:0.5rem; background:var(--gradient-main); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">📧 Verify Your Email</h2>
+                <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">We've sent a verification code to <span id="verifyEmailDisplay" style="color:var(--text-primary); font-weight:600;"></span></p>
+                <div class="form-group">
+                    <label for="verification-code">Enter 6-Digit Code</label>
+                    <input type="text" id="verification-code" placeholder="123456" maxlength="6" style="text-align:center; font-size:1.5rem; letter-spacing:0.5rem;">
+                    <span class="error-message" id="verification-code-error">Invalid code. Please try again.</span>
+                </div>
+                <div class="form-group">
+                    <button onclick="verifyAccount()" id="verifyBtn">Verify Account</button>
+                </div>
+                <div style="text-align:center; margin-top:0.5rem;">
+                    <button onclick="resendVerificationCode()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem; text-decoration:underline;">Resend Code</button>
+                </div>
+                <div style="text-align:center; margin-top:0.5rem;">
+                    <button onclick="closeVerificationModal()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+    // ===== API CONFIGURATION =====
+    const API_URL ='https://my-school-bw-c0gh.onrender.com/api';
+
+    // ===== TOKEN MANAGEMENT =====
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
+    function setToken(token) {
+        localStorage.setItem('token', token);
+    }
+
+    function removeToken() {
+        localStorage.removeItem('token');
+    }
+
+    // ===== API HELPER =====
+    async function apiCall(endpoint, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+        
+        const token = getToken();
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        try {
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers
+            });
+            return await res.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            return { success: false, message: 'Network error. Please try again.' };
+        }
+    }
+
+    // ===== CSRF TOKEN =====
+    async function fetchCsrfToken() {
+        try {
+            const res = await fetch(`${API_URL}/csrf-token`, { 
+                method: 'GET',
+                credentials: 'include' 
+            });
+            const data = await res.json();
+            sessionStorage.setItem('csrfToken', data.csrfToken);
+            return data.csrfToken;
+        } catch (e) { 
+            console.error('CSRF error:', e);
+            return null;
+        }
+    }
+
+    // ===== SCHOOL MANAGEMENT =====
+    function loadSelectedSchool() {
+        const school = JSON.parse(localStorage.getItem('selectedSchool'));
+        const schoolId = localStorage.getItem('selectedSchoolId');
+        
+        if (school) {
+            document.getElementById('currentSchoolName').textContent = school.name;
+            document.getElementById('login-school-id').value = schoolId;
+            const displays = document.querySelectorAll('#schoolDisplay');
+            displays.forEach(el => el.style.display = 'block');
+        } else {
+            const displays = document.querySelectorAll('#schoolDisplay');
+            displays.forEach(el => el.style.display = 'none');
+            const loginForm = document.getElementById('login-form');
+            if (loginForm && !document.querySelector('#schoolSelectMsg')) {
+                const msg = document.createElement('div');
+                msg.id = 'schoolSelectMsg';
+                msg.className = 'alert alert-info';
+                msg.innerHTML = 'Please select a school first. <a href="school-selector.html" style="color:#60A5FA;">Select School →</a>';
+                msg.style.display = 'block';
+                loginForm.insertBefore(msg, loginForm.firstChild);
+            }
+        }
+    }
+
+    function changeSchool() {
+        if (confirm('Change school? You will be redirected to the school selector.')) {
+            localStorage.removeItem('selectedSchool');
+            localStorage.removeItem('selectedSchoolId');
+            window.location.href = 'school-selector.html';
+        }
+    }
+
+    // ===== ANIMATED BACKGROUND: Generate Stars =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const starsContainer = document.createElement('div');
+        starsContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
+        document.body.appendChild(starsContainer);
+
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', (3 + Math.random() * 5) + 's');
+            star.style.animationDelay = Math.random() * 5 + 's';
+            star.style.width = (1 + Math.random() * 3) + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        for (let i = 0; i < 3; i++) {
+            const shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            shootingStar.style.top = (10 + Math.random() * 60) + '%';
+            shootingStar.style.animationDelay = (2 + i * 3 + Math.random() * 2) + 's';
+            shootingStar.style.width = (60 + Math.random() * 80) + 'px';
+            document.body.appendChild(shootingStar);
+        }
+    });
+
+    // ===== TOGGLE PASSWORD =====
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const btn = input.nextElementSibling;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = 'Hide Password';
+        } else {
+            input.type = 'password';
+            btn.textContent = 'Show Password';
+        }
+    }
+
+    // ===== FORM SWITCHING =====
+    function showSignup() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'block';
+        document.getElementById('forgot-password-form').style.display = 'none';
+        hideAlerts();
+    }
+
+    function showLogin() {
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('forgot-password-form').style.display = 'none';
+        hideAlerts();
+    }
+
+    function showForgotPassword() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('signup-form').style.display = 'none';
+        document.getElementById('forgot-password-form').style.display = 'block';
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').classList.remove('active');
+        hideAlerts();
+    }
+
+    function hideAlerts() {
+        document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+    }
+
+    function showAlert(type, message, containerId) {
+        const alert = document.getElementById(containerId);
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        alert.style.display = 'block';
+    }
+
+    // ===== VERIFICATION =====
+    let pendingVerificationEmail = '';
+    let pendingVerificationType = '';
+
+    function showVerificationModal(email) {
+        pendingVerificationEmail = email;
+        document.getElementById('verifyEmailDisplay').textContent = email;
+        document.getElementById('verificationModal').style.display = 'flex';
+        document.getElementById('verification-code').value = '';
+        document.getElementById('verification-code-error').style.display = 'none';
+        document.getElementById('verifyBtn').disabled = false;
+    }
+
+    function closeVerificationModal() {
+        document.getElementById('verificationModal').style.display = 'none';
+        document.getElementById('verification-code').value = '';
+        document.getElementById('verification-code-error').style.display = 'none';
+    }
+
+    async function verifyAccount() {
+        const enteredCode = document.getElementById('verification-code').value.trim();
+        const email = pendingVerificationEmail;
+
+        if (!enteredCode || enteredCode.length !== 6) {
+            document.getElementById('verification-code-error').textContent = 'Please enter a valid 6-digit code.';
+            document.getElementById('verification-code-error').style.display = 'block';
+            return;
+        }
+
+        const response = await apiCall('/verify', {
+            method: 'POST',
+            body: JSON.stringify({ email, code: enteredCode })
+        });
+
+        if (response.success) {
+            showAlert('success', '✅ Email verified successfully!', 'signupAlert');
+            closeVerificationModal();
+            // Auto-login after verification
+            const loginResponse = await apiCall('/login', {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    email: email, 
+                    password: sessionStorage.getItem('pendingPassword') 
+                })
+            });
+            if (loginResponse.success) {
+                setToken(loginResponse.token);
+                localStorage.setItem('user', JSON.stringify(loginResponse.user));
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'account.html';
+            }
+        } else {
+            document.getElementById('verification-code-error').textContent = response.message || 'Invalid code.';
+            document.getElementById('verification-code-error').style.display = 'block';
+        }
+    }
+
+    function resendVerificationCode() {
+        if (pendingVerificationEmail) {
+            apiCall('/resend-verification', {
+                method: 'POST',
+                body: JSON.stringify({ email: pendingVerificationEmail })
+            });
+            showAlert('info', 'New verification code sent to your email.', 'signupAlert');
+        }
+    }
+
+    // ===== SIGNUP =====
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        let valid = true;
+
+        const username = document.getElementById('signup-username').value.trim();
+        const email = document.getElementById('signup-email').value.trim();
+        const phone = document.getElementById('signup-phone').value.trim();
+        const password = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('confirm-password').value;
+        const schoolId = document.getElementById('login-school-id').value;
+
+        if (!schoolId) {
+            alert('Please select a school first.');
+            window.location.href = 'school-selector.html';
+            return;
+        }
+
+        if (!username || username.length < 2) {
+            document.getElementById('signup-username-error').style.display = 'block';
+            valid = false;
+        } else {
+            document.getElementById('signup-username-error').style.display = 'none';
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            document.getElementById('signup-email-error').style.display = 'block';
+            valid = false;
+        } else {
+            document.getElementById('signup-email-error').style.display = 'none';
+        }
+
+        if (phone.length < 8) {
+            document.getElementById('signup-phone-error').style.display = 'block';
+            valid = false;
+        } else {
+            document.getElementById('signup-phone-error').style.display = 'none';
+        }
+
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            document.getElementById('signup-password-error').style.display = 'block';
+            valid = false;
+        } else {
+            document.getElementById('signup-password-error').style.display = 'none';
+        }
+
+        if (password !== confirm) {
+            document.getElementById('confirm-password-error').style.display = 'block';
+            valid = false;
+        } else {
+            document.getElementById('confirm-password-error').style.display = 'none';
+        }
+
+        if (valid) {
+            const csrfToken = await fetchCsrfToken();
+            
+            const response = await apiCall('/signup', {
+                method: 'POST',
+                body: JSON.stringify({ username, email, password, phone, schoolId }),
+                headers: { 'X-CSRF-Token': csrfToken }
+            });
+
+            if (response.success) {
+                pendingVerificationEmail = email;
+                sessionStorage.setItem('pendingPassword', password);
+                showVerificationModal(email);
+                showAlert('info', 'Verification code sent to your email. Please check your inbox.', 'signupAlert');
+            } else {
+                showAlert('danger', response.message || 'Signup failed. Please try again.', 'signupAlert');
+            }
+        }
+    });
+
+    // ===== LOGIN =====
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const schoolId = document.getElementById('login-school-id').value;
+
+        if (!schoolId) {
+            alert('Please select a school first.');
+            window.location.href = 'school-selector.html';
+            return;
+        }
+
+        const response = await apiCall('/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
+        });
+
+        if (response.success) {
+            setToken(response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            const school = JSON.parse(localStorage.getItem('selectedSchool'));
+            if (school) {
+                localStorage.setItem('selectedSchool', JSON.stringify(school));
+                localStorage.setItem('selectedSchoolId', school.id);
+            }
+            
+            showAlert('success', '✅ Login successful! Redirecting...', 'loginAlert');
+            setTimeout(() => {
+                window.location.href = 'account.html';
+            }, 1000);
+        } else if (response.needsVerification) {
+            pendingVerificationEmail = email;
+            showVerificationModal(email);
+            showAlert('info', 'Please verify your email first. Check your inbox.', 'loginAlert');
+        } else {
+            showAlert('danger', response.message || 'Invalid email or password.', 'loginAlert');
+        }
+    });
+
+    // ===== FORGOT PASSWORD =====
+    async function sendResetCode() {
+        const email = document.getElementById('forgot-email').value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            document.getElementById('forgot-email-error').style.display = 'block';
+            return;
+        }
+        document.getElementById('forgot-email-error').style.display = 'none';
+
+        const response = await apiCall('/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+
+        if (response.success) {
+            showAlert('success', '📧 Password reset code sent to your email.', 'forgotAlert');
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+        } else {
+            showAlert('danger', response.message || 'No account found with this email.', 'forgotAlert');
+        }
+    }
+
+    async function resetPassword() {
+        const email = document.getElementById('forgot-email').value.trim();
+        const code = document.getElementById('reset-code').value.trim();
+        const newPassword = document.getElementById('new-password').value;
+        const confirmNew = document.getElementById('confirm-new-password').value;
+
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
+            document.getElementById('new-password-error').style.display = 'block';
+            return;
+        }
+        document.getElementById('new-password-error').style.display = 'none';
+
+        if (newPassword !== confirmNew) {
+            document.getElementById('confirm-new-password-error').style.display = 'block';
+            return;
+        }
+        document.getElementById('confirm-new-password-error').style.display = 'none';
+
+        const response = await apiCall('/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ email, code, newPassword })
+        });
+
+        if (response.success) {
+            showAlert('success', '✅ Password reset successfully! Please login.', 'forgotAlert');
+            setTimeout(() => showLogin(), 1500);
+        } else {
+            showAlert('danger', response.message || 'Invalid or expired code.', 'forgotAlert');
+        }
+    }
+
+    // ===== SEARCH =====
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = document.getElementById('search-input').value.trim();
+        const container = document.getElementById('search-results');
+        container.style.display = 'block';
+        
+        if (!query) {
+            container.innerHTML = '<p>Please enter a search term.</p>';
+            return;
+        }
+        
+        const results = [
+            { title: 'Home', description: 'Welcome to MY SCHOOL BW.', url: 'index.html' },
+            { title: 'Registration', description: 'Register your child for school.', url: 'registration.html' },
+            { title: 'My Account', description: 'View and manage your account.', url: 'account.html' },
+            { title: 'Education Levels', description: 'View all grade levels.', url: 'level.html' },
+            { title: 'Subjects', description: 'Explore all subjects.', url: 'subjects.html' },
+            { title: 'Quick Tests', description: 'Test your child\'s knowledge.', url: 'tests.html' },
+            { title: 'Administration', description: 'School management and support.', url: 'administration.html' }
+        ].filter(r => r.title.toLowerCase().includes(query.toLowerCase()) || r.description.toLowerCase().includes(query.toLowerCase()));
+
+        if (results.length === 0) {
+            container.innerHTML = `<p>No results for "${query}".</p>`;
+            return;
+        }
+
+        container.innerHTML = results.map(r =>
+            `<div class="result-item"><h3><a href="${r.url}">${r.title}</a></h3><p>${r.description}</p></div>`
+        ).join('');
+    });
+
+    document.addEventListener('click', function(e) {
+        const container = document.getElementById('search-results');
+        const searchContainer = document.querySelector('.search-container');
+        if (!searchContainer.contains(e.target)) {
+            container.style.display = 'none';
+        }
+    });
+
+    // ===== HAMBURGER MENU =====
+    document.getElementById('hamburgerBtn').addEventListener('click', function() {
+        this.classList.toggle('active');
+        const links = document.querySelectorAll('.topnav a');
+        const search = document.querySelector('.topnav .search-container');
+        links.forEach(link => link.classList.toggle('mobile-show'));
+        search.classList.toggle('mobile-show');
+    });
+
+    // ===== INIT =====
+    window.onload = function() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if (isLoggedIn === 'true') {
+            window.location.href = 'account.html';
+            return;
+        }
+        
+        loadSelectedSchool();
+        showLogin();
+    };
+    </script>
+</body>
+</html>

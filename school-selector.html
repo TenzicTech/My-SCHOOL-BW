@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your School - MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .school-selector-container {
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+
+        .school-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .school-header .brand {
+            font-size: 3rem;
+            display: inline-block;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .school-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        .school-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .school-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .school-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-main);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .school-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .school-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .school-card .icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .school-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .school-card .location {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .school-card .stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .school-card .stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .school-card .btn-select {
+            margin-top: 1rem;
+            padding: 0.5rem 2rem;
+            border-radius: 40px;
+            border: none;
+            background: var(--gradient-main);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+        }
+
+        .school-card .btn-select:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .search-school {
+            margin: 2rem 0;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-school input {
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            font-size: 1rem;
+            width: 300px;
+            font-family: var(--font-family);
+        }
+
+        .search-school input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-school input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .add-school-card {
+            border: 2px dashed var(--border-glass);
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            transition: var(--transition);
+        }
+
+        .add-school-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .add-school-card .icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        .add-school-card p {
+            color: var(--text-muted);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            background: rgba(10, 10, 30, 0.95);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 1rem;
+            text-align: center;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: var(--font-family);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group textarea {
+            border-radius: var(--radius-sm);
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+            color: var(--text-primary);
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 40px;
+            border: none;
+            background: var(--gradient-main);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 1rem;
+        }
+
+        .form-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .school-badge {
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .school-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .school-header .brand {
+                font-size: 2rem;
+            }
+            .search-school input {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .school-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="school-selector.html" class="active">🏫 SCHOOLS</a>
+            <a href="index.html">LOGIN</a>
+            <a href="account.html">MY ACCOUNT</a>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search schools.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <div class="school-selector-container">
+            <div class="school-header">
+                <div class="brand">MY<span>SCHOOL</span>BW</div>
+                <p>Select your school to get started. If your school isn't listed, you can add it.</p>
+            </div>
+
+            <!-- Search -->
+            <div class="search-school">
+                <input type="text" id="schoolSearch" placeholder="🔍 Search for your school..." oninput="filterSchools()">
+            </div>
+
+            <!-- School Grid -->
+            <div class="school-grid" id="schoolGrid">
+                <!-- Schools will be loaded here -->
+            </div>
+
+            <!-- Add School Button -->
+            <div style="text-align: center; margin-top: 2rem;">
+                <button onclick="openModal('addSchoolModal')" style="padding: 0.8rem 2rem; border-radius: 40px; border: 1px dashed var(--border-glass); background: transparent; color: var(--text-muted); cursor: pointer; transition: var(--transition); font-family: var(--font-family); font-size: 1rem;">
+                    ➕ Can't find your school? Add it here
+                </button>
+            </div>
+        </div>
+
+        <!-- Add School Modal -->
+        <div class="modal" id="addSchoolModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('addSchoolModal')">×</button>
+                <h2>🏫 Add Your School</h2>
+                <form id="addSchoolForm">
+                    <div class="form-group">
+                        <label>School Name *</label>
+                        <input type="text" id="schoolName" placeholder="e.g., Gaborone Primary School" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <input type="text" id="schoolLocation" placeholder="e.g., Gaborone, Botswana" required>
+                    </div>
+                    <div class="form-group">
+                        <label>School Type</label>
+                        <select id="schoolType">
+                            <option value="Public">Public School</option>
+                            <option value="Private">Private School</option>
+                            <option value="International">International School</option>
+                            <option value="Community">Community School</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Email</label>
+                        <input type="email" id="schoolContactEmail" placeholder="school@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>School Description</label>
+                        <textarea id="schoolDescription" placeholder="Brief description of the school..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit">Add School</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API_URL ='https://my-school-bw-c0gh.onrender.com/api';
+    // ===== ANIMATED BACKGROUND =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const starsContainer = document.createElement('div');
+        starsContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
+        document.body.appendChild(starsContainer);
+
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', (3 + Math.random() * 5) + 's');
+            star.style.animationDelay = Math.random() * 5 + 's';
+            star.style.width = (1 + Math.random() * 3) + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        for (let i = 0; i < 3; i++) {
+            const shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            shootingStar.style.top = (10 + Math.random() * 60) + '%';
+            shootingStar.style.animationDelay = (2 + i * 3 + Math.random() * 2) + 's';
+            shootingStar.style.width = (60 + Math.random() * 80) + 'px';
+            document.body.appendChild(shootingStar);
+        }
+    });
+
+    // ===== SCHOOL DATA MANAGEMENT =====
+    function getSchools() {
+        return JSON.parse(localStorage.getItem('schools')) || [];
+    }
+
+    function saveSchools(schools) {
+        localStorage.setItem('schools', JSON.stringify(schools));
+    }
+
+    function getDefaultSchools() {
+        return [
+            {
+                id: 'SCH001',
+                name: 'Gaborone Primary School',
+                location: 'Gaborone, Botswana',
+                type: 'Public',
+                contactEmail: 'info@gaboroneprimary.bw',
+                description: 'A leading primary school in Gaborone with a focus on academic excellence and holistic development.',
+                students: 450,
+                teachers: 25,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 'SCH002',
+                name: 'Francistown Academy',
+                location: 'Francistown, Botswana',
+                type: 'Private',
+                contactEmail: 'info@francistownacademy.bw',
+                description: 'Providing quality education in Francistown with modern facilities and experienced teachers.',
+                students: 320,
+                teachers: 18,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 'SCH003',
+                name: 'Maun Community School',
+                location: 'Maun, Botswana',
+                type: 'Community',
+                contactEmail: 'info@maunschool.bw',
+                description: 'A community-driven school in Maun focused on accessible education for all children.',
+                students: 280,
+                teachers: 15,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 'SCH004',
+                name: 'Lobatse International School',
+                location: 'Lobatse, Botswana',
+                type: 'International',
+                contactEmail: 'info@lobatseinternational.bw',
+                description: 'An international school in Lobatse offering a globally recognized curriculum.',
+                students: 200,
+                teachers: 12,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 'SCH005',
+                name: 'Palapye Primary School',
+                location: 'Palapye, Botswana',
+                type: 'Public',
+                contactEmail: 'info@palapyeprimary.bw',
+                description: 'A well-established primary school in Palapye with a strong academic record.',
+                students: 380,
+                teachers: 22,
+                createdAt: new Date().toISOString()
+            }
+        ];
+    }
+
+    // ===== LOAD SCHOOLS =====
+    function loadSchools() {
+        let schools = getSchools();
+        
+        // Initialize with default schools if empty
+        if (schools.length === 0) {
+            schools = getDefaultSchools();
+            saveSchools(schools);
+        }
+
+        renderSchools(schools);
+    }
+
+    function renderSchools(schools) {
+        const grid = document.getElementById('schoolGrid');
+        
+        if (schools.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🏫</div>
+                    <p>No schools found. Add your school to get started!</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = schools.map(school => `
+            <div class="school-card" onclick="selectSchool('${school.id}')">
+                <div class="icon">🏫</div>
+                <h3>${school.name}</h3>
+                <div class="location">📍 ${school.location}</div>
+                <span class="school-badge">${school.type}</span>
+                <div class="stats">
+                    <span>👨‍🎓 ${school.students || 0} students</span>
+                    <span>👩‍🏫 ${school.teachers || 0} teachers</span>
+                </div>
+                <button class="btn-select" onclick="event.stopPropagation(); selectSchool('${school.id}')">
+                    Select This School
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // ===== FILTER SCHOOLS =====
+    function filterSchools() {
+        const query = document.getElementById('schoolSearch').value.toLowerCase().trim();
+        const schools = getSchools();
+        
+        if (!query) {
+            renderSchools(schools);
+            return;
+        }
+
+        const filtered = schools.filter(school => 
+            school.name.toLowerCase().includes(query) ||
+            school.location.toLowerCase().includes(query) ||
+            school.type.toLowerCase().includes(query)
+        );
+
+        renderSchools(filtered);
+    }
+
+    // ===== SELECT SCHOOL =====
+    function selectSchool(schoolId) {
+        const schools = getSchools();
+        const school = schools.find(s => s.id === schoolId);
+        
+        if (school) {
+            // Save selected school
+            localStorage.setItem('selectedSchool', JSON.stringify(school));
+            localStorage.setItem('selectedSchoolId', schoolId);
+            
+            // Show confirmation
+            alert(`🏫 Welcome to ${school.name}!\n\nYou have selected this school. You can now register or login.`);
+            
+            // Redirect to login
+            window.location.href = 'index.html';
+        }
+    }
+
+    // ===== ADD SCHOOL =====
+    document.getElementById('addSchoolForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('schoolName').value.trim();
+        const location = document.getElementById('schoolLocation').value.trim();
+        const type = document.getElementById('schoolType').value;
+        const contactEmail = document.getElementById('schoolContactEmail').value.trim();
+        const description = document.getElementById('schoolDescription').value.trim();
+
+        if (!name || !location) {
+            alert('Please fill in the required fields (School Name and Location).');
+            return;
+        }
+
+        const schools = getSchools();
+        
+        // Check if school already exists
+        if (schools.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            alert('This school already exists. Please search for it.');
+            return;
+        }
+
+        const newSchool = {
+            id: 'SCH' + Date.now().toString(36).toUpperCase(),
+            name: name,
+            location: location,
+            type: type,
+            contactEmail: contactEmail || '',
+            description: description || '',
+            students: 0,
+            teachers: 0,
+            createdAt: new Date().toISOString()
+        };
+
+        schools.push(newSchool);
+        saveSchools(schools);
+        
+        closeModal('addSchoolModal');
+        document.getElementById('addSchoolForm').reset();
+        
+        alert('✅ School added successfully! You can now select it.');
+        loadSchools();
+    });
+
+    // ===== MODAL CONTROLS =====
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // ===== HAMBURGER =====
+    document.getElementById('hamburgerBtn').addEventListener('click', function() {
+        this.classList.toggle('active');
+        document.querySelectorAll('.topnav a').forEach(a => a.classList.toggle('mobile-show'));
+        document.querySelector('.topnav .search-container').classList.toggle('mobile-show');
+    });
+
+    // ===== SEARCH =====
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = document.getElementById('search-input').value.trim();
+        const container = document.getElementById('search-results');
+        container.style.display = 'block';
+
+        if (!query) {
+            container.innerHTML = '<p>Please enter a search term.</p>';
+            return;
+        }
+
+        const schools = getSchools();
+        const results = schools.filter(s => 
+            s.name.toLowerCase().includes(query.toLowerCase()) ||
+            s.location.toLowerCase().includes(query.toLowerCase())
+        );
+
+        container.innerHTML = results.length === 0 
+            ? `<p>No schools found for "${query}".</p>`
+            : results.map(s => `
+                <div class="result-item" onclick="selectSchool('${s.id}')" style="cursor:pointer;">
+                    <h3>🏫 ${s.name}</h3>
+                    <p>📍 ${s.location} • ${s.type}</p>
+                </div>
+            `).join('');
+    });
+
+    document.addEventListener('click', function(e) {
+        const container = document.getElementById('search-results');
+        const searchContainer = document.querySelector('.search-container');
+        if (!searchContainer.contains(e.target)) container.style.display = 'none';
+    });
+
+    // ===== INIT =====
+    window.onload = function() {
+        loadSchools();
+        
+        // Check if user is logged in and has a school
+        const user = JSON.parse(localStorage.getItem('user'));
+        const selectedSchool = localStorage.getItem('selectedSchoolId');
+        
+        if (user && selectedSchool) {
+            // User is logged in, redirect to account
+            window.location.href = 'account.html';
+        }
+    };
+    </script>
+</body>
+</html>

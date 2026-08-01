@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Tests - MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-container {
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .test-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .test-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .test-selector {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .test-selector select,
+        .test-selector button {
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            min-width: 140px;
+        }
+
+        .test-selector select option {
+            background: #1a1a1a;
+            color: var(--text-primary);
+        }
+
+        .test-selector select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .test-selector button {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .test-selector button.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .test-selector button:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .test-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .test-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .test-card .meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .test-card .meta span {
+            margin-right: 1rem;
+        }
+
+        .question {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .question p {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .options label {
+            display: block;
+            padding: 0.5rem 1rem;
+            margin: 0.3rem 0;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-glass);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .options label:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+
+        .options input[type="radio"]:checked+span {
+            color: var(--text-primary);
+        }
+
+        .btn-test {
+            padding: 0.6rem 2rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+        }
+
+        .btn-test:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .btn-test:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-box {
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .result-box.pass {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .result-box.fail {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .result-box .score {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .test-content {
+            display: none;
+        }
+
+        .test-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #29b6f6);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .test-selection-info {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .test-selection-info .highlight {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .test-header h1 {
+                font-size: 1.8rem;
+            }
+            .test-card {
+                padding: 1.2rem;
+            }
+            .test-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .test-selector select,
+            .test-selector button {
+                width: 100%;
+                min-width: unset;
+            }
+            .test-selection-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="index.html">HOME</a>
+            <a href="registration.html">REGISTRATION</a>
+            <a href="account.html">MY ACCOUNT</a>
+            <a href="level.html">EDUCATION LEVELS</a>
+            <a href="subjects.html">SUBJECTS</a>
+            <a href="tests.html" class="active">QUICK TESTS</a>
+            <a href="administration.html">ADMINISTRATION</a>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <!-- Test Header -->
+        <div class="test-header">
+            <h1>📝 Quick Tests</h1>
+            <p>Select a subject and grade level to test your child's knowledge</p>
+        </div>
+
+        <!-- Test Selection -->
+        <div class="test-selector">
+            <select id="subjectSelect">
+                <option value="math">🔢 Mathematics</option>
+                <option value="english">📖 English</option>
+                <option value="science">🔬 Science</option>
+                <option value="setswana">🗣️ Setswana</option>
+            </select>
+            <select id="gradeSelect">
+                <option value="1">Grade 1</option>
+                <option value="2">Grade 2</option>
+                <option value="3">Grade 3</option>
+                <option value="4">Grade 4</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+            </select>
+            <button onclick="loadTest()">Start Test</button>
+        </div>
+
+        <!-- Test Selection Info -->
+        <div class="test-selection-info" id="testInfo">
+            <span>📚 Subject: <span class="highlight" id="displaySubject">Mathematics</span></span>
+            <span>🎓 Grade: <span class="highlight" id="displayGrade">Grade 1</span></span>
+        </div>
+
+        <!-- Test Content -->
+        <div class="test-container">
+            <div class="test-content active" id="testContent">
+                <div class="test-card">
+                    <h3 id="testTitle">🔢 Mathematics Quiz - Grade 1</h3>
+                    <div class="meta">
+                        <span>📝 5 Questions</span>
+                        <span>⏱️ 10 minutes</span>
+                        <span>⭐ Passing: 70%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" id="progressBar" style="width: 0%;"></div>
+                    </div>
+
+                    <div id="questionsContainer">
+                        <!-- Questions will be loaded here -->
+                    </div>
+
+                    <button class="btn-test" id="submitBtn" onclick="submitTest()">Submit Test</button>
+                    <div class="result-box" id="resultBox">
+                        <div class="score" id="scoreDisplay"></div>
+                        <p id="feedbackDisplay"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API_URL ='https://my-school-bw-c0gh.onrender.com/api';
+        // Comprehensive question bank for all subjects and grades
+        const questionBank = {
+            math: {
+                1: {
+                    title: '🔢 Mathematics Quiz - Grade 1',
+                    questions: [
+                        { q: 'What is 2 + 3?', options: ['A) 3', 'B) 4', 'C) 5', 'D) 6'], answer: 'C' },
+                        { q: 'What is 5 - 2?', options: ['A) 1', 'B) 2', 'C) 3', 'D) 4'], answer: 'C' },
+                        { q: 'How many sides does a triangle have?', options: ['A) 1', 'B) 2', 'C) 3', 'D) 4'], answer: 'C' },
+                        { q: 'What number comes after 7?', options: ['A) 6', 'B) 7', 'C) 8', 'D) 9'], answer: 'C' },
+                        { q: 'What is 4 + 4?', options: ['A) 6', 'B) 7', 'C) 8', 'D) 9'], answer: 'C' }
+                    ]
+                },
+                2: {
+                    title: '🔢 Mathematics Quiz - Grade 2',
+                    questions: [
+                        { q: 'What is 7 + 8?', options: ['A) 13', 'B) 14', 'C) 15', 'D) 16'], answer: 'C' },
+                        { q: 'What is 12 - 5?', options: ['A) 5', 'B) 6', 'C) 7', 'D) 8'], answer: 'C' },
+                        { q: 'What is 3 × 4?', options: ['A) 10', 'B) 11', 'C) 12', 'D) 13'], answer: 'C' },
+                        { q: 'How many minutes in half an hour?', options: ['A) 20', 'B) 25', 'C) 30', 'D) 35'], answer: 'C' },
+                        { q: 'What is 100 - 45?', options: ['A) 45', 'B) 50', 'C) 55', 'D) 60'], answer: 'C' }
+                    ]
+                },
+                3: {
+                    title: '🔢 Mathematics Quiz - Grade 3',
+                    questions: [
+                        { q: 'What is 7 × 8?', options: ['A) 48', 'B) 56', 'C) 64', 'D) 72'], answer: 'B' },
+                        { q: 'What is 144 ÷ 12?', options: ['A) 10', 'B) 11', 'C) 12', 'D) 13'], answer: 'C' },
+                        { q: 'What is the perimeter of a square with side 5 cm?', options: ['A) 10 cm', 'B) 15 cm', 'C) 20 cm', 'D) 25 cm'], answer: 'C' },
+                        { q: 'What is 3/4 as a decimal?', options: ['A) 0.25', 'B) 0.50', 'C) 0.75', 'D) 1.00'], answer: 'C' },
+                        { q: 'How many minutes in 3 hours?', options: ['A) 120', 'B) 150', 'C) 180', 'D) 210'], answer: 'C' }
+                    ]
+                },
+                4: {
+                    title: '🔢 Mathematics Quiz - Grade 4',
+                    questions: [
+                        { q: 'What is 13 × 7?', options: ['A) 81', 'B) 91', 'C) 101', 'D) 111'], answer: 'B' },
+                        { q: 'What is 256 ÷ 16?', options: ['A) 14', 'B) 15', 'C) 16', 'D) 17'], answer: 'C' },
+                        { q: 'What is the area of a rectangle 8m × 5m?', options: ['A) 30 m²', 'B) 35 m²', 'C) 40 m²', 'D) 45 m²'], answer: 'C' },
+                        { q: 'What is 5/8 + 1/4?', options: ['A) 3/8', 'B) 5/8', 'C) 7/8', 'D) 9/8'], answer: 'C' },
+                        { q: 'How many days in 6 weeks?', options: ['A) 36', 'B) 40', 'C) 42', 'D) 48'], answer: 'C' }
+                    ]
+                },
+                5: {
+                    title: '🔢 Mathematics Quiz - Grade 5',
+                    questions: [
+                        { q: 'What is 15 × 15?', options: ['A) 200', 'B) 215', 'C) 225', 'D) 235'], answer: 'C' },
+                        { q: 'What is 1000 ÷ 25?', options: ['A) 35', 'B) 38', 'C) 40', 'D) 42'], answer: 'C' },
+                        { q: 'What is the area of a circle with radius 7cm? (π=22/7)', options: ['A) 144 cm²', 'B) 154 cm²', 'C) 164 cm²', 'D) 174 cm²'], answer: 'B' },
+                        { q: 'What is 3/5 as a percentage?', options: ['A) 40%', 'B) 50%', 'C) 60%', 'D) 70%'], answer: 'C' },
+                        { q: 'How many hours in 5 days?', options: ['A) 100', 'B) 110', 'C) 120', 'D) 130'], answer: 'C' }
+                    ]
+                },
+                6: {
+                    title: '🔢 Mathematics Quiz - Grade 6',
+                    questions: [
+                        { q: 'What is 23 × 17?', options: ['A) 371', 'B) 381', 'C) 391', 'D) 401'], answer: 'C' },
+                        { q: 'What is 1728 ÷ 12?', options: ['A) 134', 'B) 140', 'C) 144', 'D) 148'], answer: 'C' },
+                        { q: 'What is the volume of a cube with side 6cm?', options: ['A) 180 cm³', 'B) 200 cm³', 'C) 216 cm³', 'D) 226 cm³'], answer: 'C' },
+                        { q: 'What is 7/8 × 4/5?', options: ['A) 7/10', 'B) 7/12', 'C) 7/15', 'D) 7/20'], answer: 'A' },
+                        { q: 'How many seconds in 4 minutes?', options: ['A) 200', 'B) 220', 'C) 240', 'D) 260'], answer: 'C' }
+                    ]
+                },
+                7: {
+                    title: '🔢 Mathematics Quiz - Grade 7',
+                    questions: [
+                        { q: 'What is 31 × 28?', options: ['A) 848', 'B) 858', 'C) 868', 'D) 878'], answer: 'C' },
+                        { q: 'What is 2025 ÷ 45?', options: ['A) 40', 'B) 42', 'C) 45', 'D) 48'], answer: 'C' },
+                        { q: 'What is 15% of 200?', options: ['A) 25', 'B) 28', 'C) 30', 'D) 32'], answer: 'C' },
+                        { q: 'What is the square root of 196?', options: ['A) 12', 'B) 13', 'C) 14', 'D) 15'], answer: 'C' },
+                        { q: 'What is the sum of angles in a triangle?', options: ['A) 150°', 'B) 170°', 'C) 180°', 'D) 190°'], answer: 'C' }
+                    ]
+                }
+            },
+            english: {
+                1: {
+                    title: '📖 English Quiz - Grade 1',
+                    questions: [
+                        { q: 'What is the capital letter of "a"?', options: ['A) A', 'B) B', 'C) C', 'D) D'], answer: 'A' },
+                        { q: 'What rhymes with "cat"?', options: ['A) Dog', 'B) Bat', 'C) Cow', 'D) Fox'], answer: 'B' },
+                        { q: 'What is the plural of "dog"?', options: ['A) Dog', 'B) Dogs', 'C) Doges', 'D) Doggies'], answer: 'B' },
+                        { q: 'What color is the sky?', options: ['A) Blue', 'B) Red', 'C) Green', 'D) Yellow'], answer: 'A' },
+                        { q: 'What is the opposite of "happy"?', options: ['A) Sad', 'B) Joyful', 'C) Happy', 'D) Glad'], answer: 'A' }
+                    ]
+                },
+                2: {
+                    title: '📖 English Quiz - Grade 2',
+                    questions: [
+                        { q: 'Which word is a noun?', options: ['A) Run', 'B) Beautiful', 'C) School', 'D) Quickly'], answer: 'C' },
+                        { q: 'What is the past tense of "go"?', options: ['A) Goed', 'B) Went', 'C) Gone', 'D) Going'], answer: 'B' },
+                        { q: 'Which sentence is correct?', options: ['A) She don\'t like apples.', 'B) She doesn\'t like apples.', 'C) She not like apples.', 'D) She aren\'t like apples.'], answer: 'B' },
+                        { q: 'What is the synonym of "big"?', options: ['A) Small', 'B) Large', 'C) Tiny', 'D) Little'], answer: 'B' },
+                        { q: 'What is the plural of "child"?', options: ['A) Childs', 'B) Children', 'C) Childrens', 'D) Childes'], answer: 'B' }
+                    ]
+                },
+                3: {
+                    title: '📖 English Quiz - Grade 3',
+                    questions: [
+                        { q: 'What is the correct spelling?', options: ['A) Recieve', 'B) Receive', 'C) Recive', 'D) Receeve'], answer: 'B' },
+                        { q: 'What is an adjective?', options: ['A) A doing word', 'B) A naming word', 'C) A describing word', 'D) A joining word'], answer: 'C' },
+                        { q: 'What is the past tense of "write"?', options: ['A) Wrote', 'B) Written', 'C) Writed', 'D) Writing'], answer: 'A' },
+                        { q: 'What is the opposite of "dark"?', options: ['A) Black', 'B) Light', 'C) Night', 'D) Shadow'], answer: 'B' },
+                        { q: 'Which is a proper noun?', options: ['A) City', 'B) London', 'C) Country', 'D) River'], answer: 'B' }
+                    ]
+                },
+                4: {
+                    title: '📖 English Quiz - Grade 4',
+                    questions: [
+                        { q: 'What is a synonym for "beautiful"?', options: ['A) Ugly', 'B) Pretty', 'C) Bad', 'D) Mean'], answer: 'B' },
+                        { q: 'What is the antonym of "difficult"?', options: ['A) Hard', 'B) Easy', 'C) Complex', 'D) Tough'], answer: 'B' },
+                        { q: 'Which sentence has correct punctuation?', options: ['A) Hello, how are you.', 'B) Hello how are you?', 'C) Hello, how are you?', 'D) Hello, how are you'], answer: 'C' },
+                        { q: 'What is a simile?', options: ['A) A comparison using "like" or "as"', 'B) A direct comparison', 'C) A personification', 'D) An exaggeration'], answer: 'A' },
+                        { q: 'What is the main idea?', options: ['A) The most important point', 'B) A supporting detail', 'C) The title', 'D) The conclusion'], answer: 'A' }
+                    ]
+                },
+                5: {
+                    title: '📖 English Quiz - Grade 5',
+                    questions: [
+                        { q: 'What is the difference between "their" and "there"?', options: ['A) Their shows possession, there shows location', 'B) There shows possession, their shows location', 'C) They are the same', 'D) Neither is correct'], answer: 'A' },
+                        { q: 'What is an example of a metaphor?', options: ['A) He runs like a cheetah', 'B) He is a cheetah on the track', 'C) He runs fast', 'D) He is fast like a cheetah'], answer: 'B' },
+                        { q: 'What is the correct plural of "mouse"?', options: ['A) Mouses', 'B) Mice', 'C) Mice\'s', 'D) Mices'], answer: 'B' },
+                        { q: 'What is the meaning of "beneath"?', options: ['A) Above', 'B) Below', 'C) Beside', 'D) Beyond'], answer: 'B' },
+                        { q: 'What is the purpose of a paragraph?', options: ['A) To list items', 'B) To present a single idea', 'C) To tell a story', 'D) To summarize'], answer: 'B' }
+                    ]
+                },
+                6: {
+                    title: '📖 English Quiz - Grade 6',
+                    questions: [
+                        { q: 'What is the difference between "affect" and "effect"?', options: ['A) Affect is a verb, effect is a noun', 'B) Effect is a verb, affect is a noun', 'C) They are the same', 'D) Neither is correct'], answer: 'A' },
+                        { q: 'What is an example of personification?', options: ['A) The wind howled', 'B) The wind was strong', 'C) The wind blew the leaves', 'D) The wind made noise'], answer: 'A' },
+                        { q: 'What is the correct spelling?', options: ['A) Accomodate', 'B) Accommodate', 'C) Acommodate', 'D) Accomodate'], answer: 'B' },
+                        { q: 'What is the meaning of "enormous"?', options: ['A) Small', 'B) Very large', 'C) Average', 'D) Tiny'], answer: 'B' },
+                        { q: 'What is the purpose of a thesis statement?', options: ['A) To introduce the topic', 'B) To state the main argument', 'C) To conclude the essay', 'D) To list examples'], answer: 'B' }
+                    ]
+                },
+                7: {
+                    title: '📖 English Quiz - Grade 7',
+                    questions: [
+                        { q: 'What is the difference between "who" and "whom"?', options: ['A) Who is subject, whom is object', 'B) Whom is subject, who is object', 'C) They are the same', 'D) Neither is correct'], answer: 'A' },
+                        { q: 'What is an example of irony?', options: ['A) A fire station burning down', 'B) It\'s raining cats and dogs', 'C) He is as brave as a lion', 'D) The sun is shining'], answer: 'A' },
+                        { q: 'What is the correct plural of "cactus"?', options: ['A) Cactuses', 'B) Cacti', 'C) Cactus\'s', 'D) Cacti\'s'], answer: 'B' },
+                        { q: 'What is the meaning of "sublime"?', options: ['A) Common', 'B) Ordinary', 'C) Majestic', 'D) Simple'], answer: 'C' },
+                        { q: 'What is the purpose of literary devices?', options: ['A) To make writing longer', 'B) To enhance meaning and impact', 'C) To confuse readers', 'D) To follow rules'], answer: 'B' }
+                    ]
+                }
+            },
+            science: {
+                1: {
+                    title: '🔬 Science Quiz - Grade 1',
+                    questions: [
+                        { q: 'What is the sun?', options: ['A) A planet', 'B) A star', 'C) A moon', 'D) A comet'], answer: 'B' },
+                        { q: 'What do plants need to grow?', options: ['A) Sunlight and water', 'B) Darkness and air', 'C) Food only', 'D) Water only'], answer: 'A' },
+                        { q: 'What is water in solid form?', options: ['A) Steam', 'B) Water', 'C) Ice', 'D) Rain'], answer: 'C' },
+                        { q: 'What comes after day?', options: ['A) Morning', 'B) Afternoon', 'C) Night', 'D) Evening'], answer: 'C' },
+                        { q: 'What is the color of the sun?', options: ['A) Blue', 'B) Yellow', 'C) Red', 'D) Green'], answer: 'B' }
+                    ]
+                },
+                2: {
+                    title: '🔬 Science Quiz - Grade 2',
+                    questions: [
+                        { q: 'How many legs does a dog have?', options: ['A) 2', 'B) 3', 'C) 4', 'D) 5'], answer: 'C' },
+                        { q: 'What is the weather like in summer?', options: ['A) Cold', 'B) Hot', 'C) Rainy', 'D) Snowy'], answer: 'B' },
+                        { q: 'What is the largest animal in the ocean?', options: ['A) Dolphin', 'B) Shark', 'C) Whale', 'D) Octopus'], answer: 'C' },
+                        { q: 'What do birds have to fly?', options: ['A) Feet', 'B) Wings', 'C) Tails', 'D) Beaks'], answer: 'B' },
+                        { q: 'What is the color of leaves in summer?', options: ['A) Yellow', 'B) Red', 'C) Green', 'D) Brown'], answer: 'C' }
+                    ]
+                },
+                3: {
+                    title: '🔬 Science Quiz - Grade 3',
+                    questions: [
+                        { q: 'What is the largest planet in our solar system?', options: ['A) Mars', 'B) Jupiter', 'C) Saturn', 'D) Neptune'], answer: 'B' },
+                        { q: 'What is the process of plants making food called?', options: ['A) Respiration', 'B) Photosynthesis', 'C) Digestion', 'D) Evaporation'], answer: 'B' },
+                        { q: 'What is the chemical symbol for water?', options: ['A) H2O', 'B) CO2', 'C) NaCl', 'D) O2'], answer: 'A' },
+                        { q: 'What is the hardest natural substance?', options: ['A) Gold', 'B) Iron', 'C) Diamond', 'D) Quartz'], answer: 'C' },
+                        { q: 'How many bones does an adult human have?', options: ['A) 106', 'B) 206', 'C) 306', 'D) 406'], answer: 'B' }
+                    ]
+                },
+                4: {
+                    title: '🔬 Science Quiz - Grade 4',
+                    questions: [
+                        { q: 'What is the boiling point of water?', options: ['A) 50°C', 'B) 80°C', 'C) 100°C', 'D) 120°C'], answer: 'C' },
+                        { q: 'What is the largest organ in the human body?', options: ['A) Liver', 'B) Brain', 'C) Skin', 'D) Heart'], answer: 'C' },
+                        { q: 'What is an invertebrate?', options: ['A) An animal with a backbone', 'B) An animal without a backbone', 'C) A plant', 'D) A bird'], answer: 'B' },
+                        { q: 'What is the main source of energy on Earth?', options: ['A) Wind', 'B) Water', 'C) Sun', 'D) Fire'], answer: 'C' },
+                        { q: 'What is the Earth\'s atmosphere mostly made of?', options: ['A) Oxygen', 'B) Nitrogen', 'C) Carbon dioxide', 'D) Hydrogen'], answer: 'B' }
+                    ]
+                },
+                5: {
+                    title: '🔬 Science Quiz - Grade 5',
+                    questions: [
+                        { q: 'What is the difference between a physical and chemical change?', options: ['A) Physical changes create new substances', 'B) Chemical changes create new substances', 'C) They are the same', 'D) Neither creates new substances'], answer: 'B' },
+                        { q: 'What is the process of water changing to gas called?', options: ['A) Condensation', 'B) Evaporation', 'C) Precipitation', 'D) Transpiration'], answer: 'B' },
+                        { q: 'What is the function of the heart?', options: ['A) To think', 'B) To pump blood', 'C) To digest food', 'D) To breathe'], answer: 'B' },
+                        { q: 'What is an ecosystem?', options: ['A) A group of animals', 'B) A community of living things and their environment', 'C) A type of plant', 'D) A weather pattern'], answer: 'B' },
+                        { q: 'What is the moon?', options: ['A) A planet', 'B) A star', 'C) A satellite of Earth', 'D) A comet'], answer: 'C' }
+                    ]
+                },
+                6: {
+                    title: '🔬 Science Quiz - Grade 6',
+                    questions: [
+                        { q: 'What is the difference between a mixture and a compound?', options: ['A) Mixtures are chemically combined', 'B) Compounds are chemically combined', 'C) They are the same', 'D) Neither is chemically combined'], answer: 'B' },
+                        { q: 'What is the role of the nervous system?', options: ['A) To pump blood', 'B) To send signals throughout the body', 'C) To digest food', 'D) To breathe'], answer: 'B' },
+                        { q: 'What is the greenhouse effect?', options: ['A) A natural warming of the Earth', 'B) A type of plant', 'C) A chemical reaction', 'D) A weather pattern'], answer: 'A' },
+                        { q: 'What is the periodic table?', options: ['A) A table of all known elements', 'B) A table of all known compounds', 'C) A table of all known mixtures', 'D) A table of all known solutions'], answer: 'A' },
+                        { q: 'What is the life cycle of a star?', options: ['A) Born, lives, dies', 'B) Always exists', 'C) Dies then is reborn', 'D) Never changes'], answer: 'A' }
+                    ]
+                },
+                7: {
+                    title: '🔬 Science Quiz - Grade 7',
+                    questions: [
+                        { q: 'What is the difference between prokaryotic and eukaryotic cells?', options: ['A) Prokaryotes have a nucleus', 'B) Eukaryotes have a nucleus', 'C) They are the same', 'D) Neither has a nucleus'], answer: 'B' },
+                        { q: 'What is the theory of evolution?', options: ['A) Species change over time', 'B) Species never change', 'C) All species are the same', 'D) Species appear and disappear randomly'], answer: 'A' },
+                        { q: 'What is the role of the immune system?', options: ['A) To digest food', 'B) To fight disease', 'C) To pump blood', 'D) To breathe'], answer: 'B' },
+                        { q: 'What is the difference between renewable and non-renewable energy?', options: ['A) Renewable energy can be replenished', 'B) Non-renewable energy can be replenished', 'C) They are the same', 'D) Neither can be replenished'], answer: 'A' },
+                        { q: 'What is the nature of light?', options: ['A) It is a particle', 'B) It is a wave', 'C) It is both a particle and a wave', 'D) It is neither'], answer: 'C' }
+                    ]
+                }
+            },
+            setswana: {
+                1: {
+                    title: '🗣️ Setswana Quiz - Grade 1',
+                    questions: [
+                        { q: 'What is "dog" in Setswana?', options: ['A) Ntša', 'B) Katse', 'C) Poo', 'D) Nku'], answer: 'A' },
+                        { q: 'What is "house" in Setswana?', options: ['A) Ntlo', 'B) Kgoro', 'C) Tsela', 'D) Noka'], answer: 'A' },
+                        { q: 'What is "water" in Setswana?', options: ['A) Mosi', 'B) Metsi', 'C) Mollo', 'D) Moya'], answer: 'B' },
+                        { q: 'What is "mother" in Setswana?', options: ['A) Mme', 'B) Rre', 'C) Ntate', 'D) Koko'], answer: 'A' },
+                        { q: 'What is "food" in Setswana?', options: ['A) Metsi', 'B) Mosi', 'C) Dijo', 'D) Mollo'], answer: 'C' }
+                    ]
+                },
+                2: {
+                    title: '🗣️ Setswana Quiz - Grade 2',
+                    questions: [
+                        { q: 'What is "school" in Setswana?', options: ['A) Ntlo', 'B) Sekolo', 'C) Kereke', 'D) Banki'], answer: 'B' },
+                        { q: 'What is "teacher" in Setswana?', options: ['A) Ngaka', 'B) Morutabana', 'C) Moperesiti', 'D) Moetapele'], answer: 'B' },
+                        { q: 'What is "friend" in Setswana?', options: ['A) Leloko', 'B) Tsala', 'C) Moagi', 'D) Mokgwa'], answer: 'B' },
+                        { q: 'What is "happy" in Setswana?', options: ['A) Itumetse', 'B) Ithabile', 'C) Ithata', 'D) Itumela'], answer: 'B' },
+                        { q: 'What is "name" in Setswana?', options: ['A) Letso', 'B) Leina', 'C) Lefoko', 'D) Letlha'], answer: 'B' }
+                    ]
+                },
+                3: {
+                    title: '🗣️ Setswana Quiz - Grade 3',
+                    questions: [
+                        { q: 'What is "book" in Setswana?', options: ['A) Pampiri', 'B) Pene', 'C) Buka', 'D) Tafole'], answer: 'C' },
+                        { q: 'What is "read" in Setswana?', options: ['A) Bala', 'B) Kwala', 'C) Tlhama', 'D) Ruta'], answer: 'A' },
+                        { q: 'What is "write" in Setswana?', options: ['A) Bala', 'B) Kwala', 'C) Tlhama', 'D) Ruta'], answer: 'B' },
+                        { q: 'What is "play" in Setswana?', options: ['A) Bala', 'B) Kwala', 'C) Tlhama', 'D) Tshameka'], answer: 'D' },
+                        { q: 'What is "morning" in Setswana?', options: ['A) Mose', 'B) Mokgare', 'C) Motshegare', 'D) Maitaiboswa'], answer: 'A' }
+                    ]
+                },
+                4: {
+                    title: '🗣️ Setswana Quiz - Grade 4',
+                    questions: [
+                        { q: 'What is the Setswana word for "mountain"?', options: ['A) Thaba', 'B) Noka', 'C) Letlhaba', 'D) Dithaba'], answer: 'A' },
+                        { q: 'What is the Setswana word for "river"?', options: ['A) Thaba', 'B) Noka', 'C) Letlhaba', 'D) Dithaba'], answer: 'B' },
+                        { q: 'What is the Setswana word for "bird"?', options: ['A) Phologolo', 'B) Nonyane', 'C) Tladi', 'D) Kgaka'], answer: 'B' },
+                        { q: 'What is the Setswana word for "tree"?', options: ['A) Sefate', 'B) Nonyane', 'C) Tladi', 'D) Kgaka'], answer: 'A' },
+                        { q: 'What is the Setswana word for "star"?', options: ['A) Sefate', 'B) Nonyane', 'C) Tladi', 'D) Kgaka'], answer: 'C' }
+                    ]
+                },
+                5: {
+                    title: '🗣️ Setswana Quiz - Grade 5',
+                    questions: [
+                        { q: 'What is the Setswana word for "knowledge"?', options: ['A) Thuto', 'B) Kitso', 'C) Tlhale', 'D) Mpona'], answer: 'B' },
+                        { q: 'What is the Setswana word for "love"?', options: ['A) Lefoko', 'B) Lerato', 'C) Lorato', 'D) Leloko'], answer: 'B' },
+                        { q: 'What is the Setswana word for "peace"?', options: ['A) Kgakgamatio', 'B) Kgotso', 'C) Kagiso', 'D) Ketso'], answer: 'B' },
+                        { q: 'What is the Setswana word for "country"?', options: ['A) Naga', 'B) Motse', 'C) Toropo', 'D) Kgaolo'], answer: 'A' },
+                        { q: 'What is the Setswana word for "history"?', options: ['A) Thuto', 'B) Kitso', 'C) Tlhale', 'D) Hisitori'], answer: 'D' }
+                    ]
+                },
+                6: {
+                    title: '🗣️ Setswana Quiz - Grade 6',
+                    questions: [
+                        { q: 'What is the Setswana word for "government"?', options: ['A) Puso', 'B) Kgotla', 'C) Molao', 'D) Tlhale'], answer: 'A' },
+                        { q: 'What is the Setswana word for "education"?', options: ['A) Thuto', 'B) Kitso', 'C) Tlhale', 'D) Mpona'], answer: 'A' },
+                        { q: 'What is the Setswana word for "culture"?', options: ['A) Ngwao', 'B) Setso', 'C) Bontle', 'D) Kgotso'], answer: 'B' },
+                        { q: 'What is the Setswana word for "community"?', options: ['A) Motse', 'B) Sechaba', 'C) Lelapa', 'D) Kgaolo'], answer: 'B' },
+                        { q: 'What is the Setswana word for "future"?', options: ['A) Nakong e fetileng', 'B) Nakong e e tlang', 'C) Jaanong', 'D) Kamoso'], answer: 'D' }
+                    ]
+                },
+                7: {
+                    title: '🗣️ Setswana Quiz - Grade 7',
+                    questions: [
+                        { q: 'What is the Setswana word for "democracy"?', options: ['A) Puso ya batho', 'B) Puso ya bontlhanngwe', 'C) Puso ya naga', 'D) Puso ya kgotla'], answer: 'A' },
+                        { q: 'What is the Setswana word for "development"?', options: ['A) Thulaganyo', 'B) Tokafatso', 'C) Tlhabololo', 'D) Katlego'], answer: 'C' },
+                        { q: 'What is the Setswana word for "responsibility"?', options: ['A) Boikarabelo', 'B) Boipuso', 'C) Botsogo', 'D) Bogaka'], answer: 'A' },
+                        { q: 'What is the Setswana word for "freedom"?', options: ['A) Tokololo', 'B) Kgotso', 'C) Kagiso', 'D) Katlego'], answer: 'A' },
+                        { q: 'What is the Setswana word for "knowledge"?', options: ['A) Thuto', 'B) Kitso', 'C) Tlhale', 'D) Mpona'], answer: 'B' }
+                    ]
+                }
+            }
+        };
+
+        let currentSubject = 'math';
+        let currentGrade = 1;
+        let currentQuestions = [];
+
+        // Load test based on selection
+        function loadTest() {
+            currentSubject = document.getElementById('subjectSelect').value;
+            currentGrade = parseInt(document.getElementById('gradeSelect').value);
+
+            // Update display
+            const subjectNames = {
+                math: 'Mathematics',
+                english: 'English',
+                science: 'Science',
+                setswana: 'Setswana'
+            };
+            document.getElementById('displaySubject').textContent = subjectNames[currentSubject];
+            document.getElementById('displayGrade').textContent = `Grade ${currentGrade}`;
+
+            // Get questions
+            const questions = questionBank[currentSubject]?.[currentGrade];
+            if (!questions) {
+                document.getElementById('questionsContainer').innerHTML = '<p style="color: var(--text-muted);">No questions available for this combination.</p>';
+                return;
+            }
+
+            currentQuestions = questions.questions;
+            document.getElementById('testTitle').textContent = questions.title;
+
+            // Render questions
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = currentQuestions.map((q, index) => `
+                <div class="question">
+                    <p>${index + 1}. ${q.q}</p>
+                    <div class="options">
+                        ${q.options.map(opt => `
+                            <label>
+                                <input type="radio" name="q${index}" value="${opt.charAt(0)}">
+                                <span>${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Reset progress and results
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('submitBtn').disabled = false;
+
+            // Scroll to test
+            document.getElementById('testContent').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Submit test
+        function submitTest() {
+            const questions = currentQuestions;
+            let score = 0;
+            let answered = 0;
+
+            questions.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected) {
+                    answered++;
+                    if (selected.value === q.answer) {
+                        score++;
+                    }
+                }
+            });
+
+            // Update progress
+            const progress = document.getElementById('progressBar');
+            progress.style.width = `${(answered / questions.length) * 100}%`;
+
+            // Show result
+            const resultBox = document.getElementById('resultBox');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const feedback = document.getElementById('feedbackDisplay');
+
+            resultBox.style.display = 'block';
+            const percentage = (score / questions.length) * 100;
+
+            if (percentage >= 70) {
+                resultBox.className = 'result-box pass';
+                scoreDisplay.textContent = `⭐ ${score}/${questions.length} (${percentage}%)`;
+                feedback.textContent = '🎉 Excellent work! Your child has passed this test! Keep up the great effort!';
+            } else {
+                resultBox.className = 'result-box fail';
+                scoreDisplay.textContent = `📝 ${score}/${questions.length} (${percentage}%)`;
+                feedback.textContent = '📚 Keep practicing! Review the material and try again. You can do it!';
+            }
+
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        // Hamburger menu
+        document.getElementById('hamburgerBtn').addEventListener('click', function() {
+            this.classList.toggle('active');
+            const links = document.querySelectorAll('.topnav a');
+            const search = document.querySelector('.topnav .search-container');
+            links.forEach(link => link.classList.toggle('mobile-show'));
+            search.classList.toggle('mobile-show');
+        });
+
+        // Search
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('search-input').value.trim();
+            const container = document.getElementById('search-results');
+            container.style.display = 'block';
+
+            if (!query) {
+                container.innerHTML = '<p>Please enter a search term.</p>';
+                return;
+            }
+
+            const results = [
+                { title: 'Math Quiz', description: 'Test your child\'s math skills.', url: '#math' },
+                { title: 'English Quiz', description: 'Assess English language skills.', url: '#english' },
+                { title: 'Science Quiz', description: 'Explore science concepts.', url: '#science' },
+                { title: 'Setswana Quiz', description: 'Test Setswana language skills.', url: '#setswana' }
+            ].filter(r => r.title.toLowerCase().includes(query.toLowerCase()) || r.description.toLowerCase().includes(query.toLowerCase()));
+
+            if (results.length === 0) {
+                container.innerHTML = `<p>No results found for "${query}".</p>`;
+                return;
+            }
+
+            container.innerHTML = results.map(r =>
+                `<div class="result-item"><h3><a href="${r.url}">${r.title}</a></h3><p>${r.description}</p></div>`
+            ).join('');
+        });
+
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('search-results');
+            const searchContainer = document.querySelector('.search-container');
+            if (!searchContainer.contains(e.target)) {
+                container.style.display = 'none';
+            }
+        });
+
+        // Load default test on page load
+        window.onload = function() {
+            loadTest();
+        };
+    </script>
+</body>
+</html>
