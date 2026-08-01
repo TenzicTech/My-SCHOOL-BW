@@ -1,0 +1,17 @@
+# Environment variables
+.env
+.env.local
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+
+# Data files
+data/*.json
+!data/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
