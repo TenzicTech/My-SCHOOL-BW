@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Email Verification - MY SCHOOL BW</title>
+    <style>
+        .form-container {
+            max-width: 480px;
+            margin: 4rem auto;
+            padding: 2rem 2.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+        }
+
+        .form-container h2 {
+            margin-bottom: 0.5rem;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-container .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+            font-size: 1rem;
+            letter-spacing: normal;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 40px;
+            border: none;
+            background: var(--gradient-main);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 1rem;
+        }
+
+        .form-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 1.2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-switch a {
+            color: var(--text-primary);
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .form-switch a:hover {
+            border-bottom-color: var(--text-primary);
+        }
+
+        .error-message {
+            color: #fca5a5;
+            font-size: 0.8rem;
+            display: none;
+            margin-top: 0.3rem;
+        }
+
+        .alert {
+            padding: 0.8rem 1.2rem;
+            border-radius: 40px;
+            margin: 0.8rem 0;
+            display: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-info {
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="form-container">
+        <h2>📧 Verify Your Email</h2>
+        <p class="subtitle">Enter the 6-digit code sent to your email</p>
+
+        <div class="alert alert-danger" id="verifyAlert" style="display:none;"></div>
+
+        <form id="verifyForm">
+            <div class="form-group">
+                <label for="verify-email">Email Address</label>
+                <input type="email" id="verify-email" name="email" readonly required style="font-size:1rem; letter-spacing:normal; text-align:center;">
+                <span class="error-message" id="verify-email-error">Please enter a valid email.</span>
+            </div>
+            <div class="form-group">
+                <label for="verify-code">Verification Code</label>
+                <input type="text" id="verify-code" name="code" placeholder="123456" maxlength="6" required>
+                <span class="error-message" id="verify-code-error">Please enter a valid 6-digit code.</span>
+            </div>
+            <div class="form-group" style="display:flex; gap:0.5rem;">
+                <button type="submit" style="flex:2;">Verify</button>
+                <button type="button" onclick="resendCode()" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border-glass);">Resend</button>
+            </div>
+        </form>
+
+        <div class="form-switch">
+            <a href="index.html">Back to Login</a>
+        </div>
+    </div>
+
+    <script>
+    // ===== ANIMATED BACKGROUND: Generate Stars =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const starsContainer = document.createElement('div');
+        starsContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
+        document.body.appendChild(starsContainer);
+
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', (3 + Math.random() * 5) + 's');
+            star.style.animationDelay = Math.random() * 5 + 's';
+            star.style.width = (1 + Math.random() * 3) + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        for (let i = 0; i < 3; i++) {
+            const shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            shootingStar.style.top = (10 + Math.random() * 60) + '%';
+            shootingStar.style.animationDelay = (2 + i * 3 + Math.random() * 2) + 's';
+            shootingStar.style.width = (60 + Math.random() * 80) + 'px';
+            document.body.appendChild(shootingStar);
+        }
+    });
+
+    // Get email from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const email = urlParams.get('email');
+
+    if (email) {
+        document.getElementById('verify-email').value = email;
+    }
+
+    function showAlert(type, message) {
+        const alert = document.getElementById('verifyAlert');
+        alert.className = `alert alert-${type}`;
+        alert.textContent = message;
+        alert.style.display = 'block';
+    }
+
+    function hideAlert() {
+        document.getElementById('verifyAlert').style.display = 'none';
+    }
+
+    // Verify form submission
+    document.getElementById('verifyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideAlert();
+
+        const email = document.getElementById('verify-email').value.trim();
+        const code = document.getElementById('verify-code').value.trim();
+
+        if (!email) {
+            document.getElementById('verify-email-error').style.display = 'block';
+            return;
+        }
+        document.getElementById('verify-email-error').style.display = 'none';
+
+        if (code.length !== 6 || isNaN(code)) {
+            document.getElementById('verify-code-error').style.display = 'block';
+            return;
+        }
+        document.getElementById('verify-code-error').style.display = 'none';
+
+        // Check verification
+        const verifications = JSON.parse(localStorage.getItem('verifications')) || {};
+        const record = verifications[email];
+
+        if (!record) {
+            showAlert('danger', 'No verification found for this email. Please request a new code.');
+            return;
+        }
+
+        if (Date.now() - record.timestamp > 600000) {
+            showAlert('danger', 'Code expired. Please request a new code.');
+            return;
+        }
+
+        if (record.code === code) {
+            // Mark as verified
+            record.verified = true;
+            verifications[email] = record;
+            localStorage.setItem('verifications', JSON.stringify(verifications));
+
+            // Update user in database
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userIndex = users.findIndex(u => u.email === email);
+            if (userIndex !== -1) {
+                users[userIndex].verified = true;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            // Update session
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user && user.email === email) {
+                localStorage.setItem('isLoggedIn', 'true');
+            }
+
+            showAlert('success', '✅ Email verified successfully! Redirecting...');
+            setTimeout(() => {
+                window.location.href = 'account.html';
+            }, 1500);
+        } else {
+            showAlert('danger', '❌ Invalid code. Please try again.');
+            document.getElementById('verify-code-error').textContent = 'Invalid code. Please try again.';
+            document.getElementById('verify-code-error').style.display = 'block';
+        }
+    });
+
+    // Resend code
+    function resendCode() {
+        hideAlert();
+        const email = document.getElementById('verify-email').value.trim();
+
+        if (!email) {
+            document.getElementById('verify-email-error').style.display = 'block';
+            return;
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const verifications = JSON.parse(localStorage.getItem('verifications')) || {};
+        verifications[email] = {
+            code: code,
+            type: 'signup',
+            timestamp: Date.now(),
+            verified: false
+        };
+        localStorage.setItem('verifications', JSON.stringify(verifications));
+
+        console.log(`📧 New verification code for ${email}: ${code}`);
+
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            alert(`📧 New Verification Code for ${email}: ${code}\n\nEnter this code to verify your account.`);
+        }
+
+        showAlert('info', '📧 New verification code sent to your email.');
+    }
+    </script>
+</body>
+</html>
