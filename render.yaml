@@ -10,7 +10,5 @@ services:
         value: production
       - key: PORT
         value: 3001
-      - key: MONGODB_URI
-        sync: false  # ← THIS IS IMPORTANT! Set it manually in dashboard
       - key: JWT_SECRET
-        sync: false  # ← THIS IS IMPORTANT! Set it manually in dashboard
+        sync: false
