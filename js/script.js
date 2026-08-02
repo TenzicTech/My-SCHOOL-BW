@@ -5,13 +5,13 @@
 // ============================================================
 // ===== API CONFIGURATION =====
 // ============================================================
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? '/api'
-    : 'https://my-school-bw-c0gh.onrender.com/api';
+
+const API_URL = 'https://my-school-bw-c0gh.onrender.com/api';
 
 // ============================================================
 // ===== TOKEN MANAGEMENT =====
 // ============================================================
+
 function getToken() {
     return localStorage.getItem('token');
 }
@@ -31,6 +31,7 @@ function isLoggedIn() {
 // ============================================================
 // ===== API HELPER =====
 // ============================================================
+
 async function apiCall(endpoint, options = {}) {
     const headers = {
         'Content-Type': 'application/json',
@@ -53,6 +54,8 @@ async function apiCall(endpoint, options = {}) {
         return { success: false, message: 'Network error. Please try again.' };
     }
 }
+
+console.log('✅ Connected to API:', API_URL);
 
 // ============================================================
 // ===== ANIMATED BACKGROUND =====
