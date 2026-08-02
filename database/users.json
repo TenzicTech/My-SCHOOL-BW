@@ -1,0 +1,24 @@
+[
+  {
+    "id": "USR001",
+    "username": "Admin User",
+    "email": "admin@school.com",
+    "password": "admin123",
+    "phone": "+267 72 123 456",
+    "schoolId": "SCH001",
+    "isSchoolAdmin": true,
+    "isVerified": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "USR002",
+    "username": "Test Parent",
+    "email": "parent@email.com",
+    "password": "parent123",
+    "phone": "+267 72 123 456",
+    "schoolId": "SCH001",
+    "isSchoolAdmin": false,
+    "isVerified": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+]
