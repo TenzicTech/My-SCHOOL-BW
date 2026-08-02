@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard - MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-section h1 {
+            font-size: 2.5rem;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-section .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        .welcome-section .school-badge {
+            display: inline-block;
+            padding: 0.3rem 1.5rem;
+            border-radius: 40px;
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+            margin-top: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .children-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .children-section h2 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .child-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-glass);
+            margin-bottom: 0.8rem;
+            transition: var(--transition);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .child-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .child-card .info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .child-card .info .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .child-card .info .name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .child-card .info .grade {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .child-card .progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .child-card .progress .score {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .child-card .progress .score.pass {
+            color: #86efac;
+        }
+
+        .child-card .progress .score.fail {
+            color: #fca5a5;
+        }
+
+        .progress-bar {
+            width: 120px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            background: var(--gradient-main);
+        }
+
+        .child-card .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 0.85rem;
+        }
+
+        .btn-sm:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-sm.primary {
+            border-color: rgba(96, 165, 250, 0.3);
+            color: #93c5fd;
+        }
+
+        .btn-sm.primary:hover {
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        .resources-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .resources-section h2 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .book-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .book-card .book-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .book-card .book-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .book-card .book-grade {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .school-info-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .school-info-section h2 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .school-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .school-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+        }
+
+        .school-detail-item .icon {
+            font-size: 1.2rem;
+        }
+
+        .school-detail-item .label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .school-detail-item .value {
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-family: var(--font-family);
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .action-btn .icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .action-btn .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .child-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .child-card .info {
+                flex-direction: column;
+            }
+            .school-details {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .books-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .welcome-section h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="container">
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="account.html">MY ACCOUNT</a>
+            <a href="level.html">EDUCATION LEVELS</a>
+            <a href="parent-home.html">HOME</a>
+            <a href="progress.html">PROGRESS</a>
+            <a href="registration.html">REGISTRATION</a>
+            <a href="school-profile.html">PROFILE</a>
+            <a href="school-selector.html">SCHOOLS</a>
+            <a href="subjects.html">SUBJECTS</a>
+            <a href="tests.html">QUICK TESTS</a>
+            <button class="btn-logout" onclick="logoutUser()">🚪 Logout</button>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <div class="dashboard-container">
+            <div class="welcome-section">
+                <h1>👋 Welcome, <span id="parentName">Parent</span>!</h1>
+                <p class="subtitle">Your children's education journey starts here</p>
+                <span class="school-badge" id="parentSchool">🏫 Loading school...</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon">👶</div>
+                    <div class="number" id="childrenCount">0</div>
+                    <div class="label">Children Registered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">📊</div>
+                    <div class="number" id="avgScore">0%</div>
+                    <div class="label">Average Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">✅</div>
+                    <div class="number" id="passRate">0%</div>
+                    <div class="label">Pass Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">📝</div>
+                    <div class="number" id="totalTests">0</div>
+                    <div class="label">Tests Completed</div>
+                </div>
+            </div>
+
+            <div class="children-section">
+                <h2>👨‍👩‍👧‍👦 Your Children</h2>
+                <div id="childrenList">
+                    <p style="color: var(--text-muted); text-align: center; padding: 1rem;">Loading your children...</p>
+                </div>
+            </div>
+
+            <div class="resources-section">
+                <h2>📚 Books & Learning Resources</h2>
+                <div class="books-grid" id="booksGrid">
+                    <!-- Dynamically loaded from school data -->
+                </div>
+            </div>
+
+            <div class="school-info-section">
+                <h2>🏫 Your School</h2>
+                <div class="school-details" id="schoolDetails">
+                    <div class="school-detail-item">
+                        <span class="icon">🏛️</span>
+                        <div>
+                            <div class="label">School Name</div>
+                            <div class="value" id="schoolNameDisplay">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="school-detail-item">
+                        <span class="icon">📍</span>
+                        <div>
+                            <div class="label">Location</div>
+                            <div class="value" id="schoolLocationDisplay">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="school-detail-item">
+                        <span class="icon">📞</span>
+                        <div>
+                            <div class="label">Contact</div>
+                            <div class="value" id="schoolPhoneDisplay">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="school-detail-item">
+                        <span class="icon">📧</span>
+                        <div>
+                            <div class="label">Email</div>
+                            <div class="value" id="schoolEmailDisplay">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="school-detail-item">
+                        <span class="icon">👨‍🎓</span>
+                        <div>
+                            <div class="label">Total Students</div>
+                            <div class="value" id="schoolStudentsCount">Loading...</div>
+                        </div>
+                    </div>
+                    <div class="school-detail-item">
+                        <span class="icon">👩‍🏫</span>
+                        <div>
+                            <div class="label">Total Teachers</div>
+                            <div class="value" id="schoolTeachersCount">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="action-btn" onclick="window.location.href='registration.html'">
+                    <span class="icon">📝</span>
+                    <span class="label">Register Child</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='tests.html'">
+                    <span class="icon">📝</span>
+                    <span class="label">Take Test</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='progress.html'">
+                    <span class="icon">📊</span>
+                    <span class="label">View Progress</span>
+                </button>
+                <button class="action-btn" onclick="window.location.href='account.html'">
+                    <span class="icon">⚙️</span>
+                    <span class="label">Settings</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

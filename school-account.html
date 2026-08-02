@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Account - MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .account-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .school-profile-header {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .school-profile-header h1 {
+            font-size: 2.5rem;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .school-profile-header .school-id {
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+
+        .school-profile-header .admin-info {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .account-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-card .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6C3CE1, #E9405F);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 0 40px rgba(108, 60, 225, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .profile-card .email {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .profile-card .badge {
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .profile-card .badge.verified {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34D399;
+        }
+
+        .profile-card .school-stats-mini {
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-glass);
+        }
+
+        .profile-card .school-stats-mini .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-card .school-stats-mini .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .btn-logout {
+            padding: 0.6rem 2rem;
+            border-radius: 40px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            margin-top: 1rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .details-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+        }
+
+        .details-card h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .detail-row .value {
+            font-weight: 500;
+        }
+
+        .students-list {
+            margin-top: 1.5rem;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-glass);
+            transition: var(--transition);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .student-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .student-item .info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .student-item .info .name {
+            font-weight: 500;
+        }
+
+        .student-item .info .grade {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .student-item .status {
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+
+        .status.active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+        }
+
+        .status.pending {
+            background: rgba(255, 193, 7, 0.15);
+            color: #ffd54f;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 0.85rem;
+        }
+
+        .btn-sm:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-sm.primary {
+            border-color: rgba(96, 165, 250, 0.3);
+            color: #93c5fd;
+        }
+
+        .btn-sm.primary:hover {
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .account-grid {
+                grid-template-columns: 1fr;
+            }
+            .detail-row {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+            .student-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            .student-item .info {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="container">
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="school-home.html">HOME</a>
+            <a href="school-account.html">SCHOOL ACCOUNT</a>
+            <a href="admin-dashboard.html">DASHBOARD</a>
+            <a href="school-progress.html">PROGRESS</a>
+            <button class="btn-logout" onclick="logoutUser()">🚪 Logout</button>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <div class="account-container">
+            <div class="school-profile-header">
+                <h1>🏫 School Account</h1>
+                <div class="school-id" id="schoolIdDisplay">ID: Loading...</div>
+                <div class="admin-info" id="adminInfoDisplay">👤 Admin: Loading...</div>
+            </div>
+
+            <div class="account-grid">
+                <div class="profile-card">
+                <div class="avatar" id="schoolAvatar">🏫</div>
+                <h3 id="schoolNameDisplay">Loading...</h3>
+                <div class="email" id="schoolEmailDisplay">Loading...</div>
+                <div class="badge verified" id="schoolBadge">✅ Verified School</div>
+
+                <div class="school-stats-mini">
+                    <div class="stat-row">
+                        <span>👨‍🎓 Students</span>
+                        <span id="miniStudents">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>👩‍🏫 Teachers</span>
+                        <span id="miniTeachers">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>📊 Reports</span>
+                        <span id="miniReports">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>📈 Avg Score</span>
+                        <span id="miniAvgScore">0%</span>
+                    </div>
+                </div>
+
+                <!-- ADD THE LOGOUT BUTTON HERE -->
+                <button class="btn-logout" onclick="logoutUser()">🚪 Logout</button>
+            </div>
+
+                <div class="details-card">
+                    <h3>📋 School Details</h3>
+                    <div class="detail-row">
+                        <span class="label">School Name</span>
+                        <span class="value" id="detailSchoolName">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Location</span>
+                        <span class="value" id="detailLocation">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Phone</span>
+                        <span class="value" id="detailPhone">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Email</span>
+                        <span class="value" id="detailEmail">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">School Type</span>
+                        <span class="value" id="detailType">Loading...</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Registered On</span>
+                        <span class="value" id="detailRegistered">Loading...</span>
+                    </div>
+
+                    <h3 style="margin-top: 2rem;">👨‍🎓 Recent Students</h3>
+                    <div class="students-list" id="recentStudentsList">
+                        <p style="color: var(--text-muted); text-align: center; padding: 1rem;">Loading students...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

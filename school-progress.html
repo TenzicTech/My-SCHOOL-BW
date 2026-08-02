@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Progress - MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .progress-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .progress-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-header h1 {
+            font-size: 2.5rem;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-card h2 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .grade-performance {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .grade-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .grade-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .grade-card .grade-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .grade-card .score {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .grade-card .score.pass {
+            color: #86efac;
+        }
+
+        .grade-card .score.fail {
+            color: #fca5a5;
+        }
+
+        .grade-card .students-count {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .grade-card .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .grade-card .progress-bar .fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            background: var(--gradient-main);
+        }
+
+        .subject-performance {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .subject-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 1.2rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .subject-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .subject-card .subject-icon {
+            font-size: 2rem;
+        }
+
+        .subject-card .subject-name {
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+
+        .subject-card .subject-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.3rem;
+        }
+
+        .subject-card .subject-score.pass {
+            color: #86efac;
+        }
+
+        .subject-card .subject-score.fail {
+            color: #fca5a5;
+        }
+
+        .subject-card .subject-details {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .student-list-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .student-list-table th {
+            text-align: left;
+            padding: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .student-list-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .student-list-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .student-list-table .score-pass {
+            color: #86efac;
+            font-weight: 600;
+        }
+
+        .student-list-table .score-fail {
+            color: #fca5a5;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: #86efac;
+        }
+
+        .trend-down {
+            color: #fca5a5;
+        }
+
+        .trend-stable {
+            color: #ffd54f;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .grade-performance {
+                grid-template-columns: 1fr;
+            }
+            .subject-performance {
+                grid-template-columns: 1fr 1fr;
+            }
+            .student-list-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .subject-performance {
+                grid-template-columns: 1fr;
+            }
+            .progress-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="container">
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="school-account.html">SCHOOL ACCOUNT</a>
+            <a href="school-home.html">HOME</a>
+            <a href="school-progress.html">SCHOOL PROGRESS</a>
+            <a href="school-selector.html">SCHOOLS</a>
+            <a href="subjects.html">SUBJECTS</a>
+            <a href="tests.html">QUICK TESTS</a>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-header">
+                <h1>📈 School Progress Overview</h1>
+                <p>Track performance across all grades, subjects, and students</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon">📊</div>
+                    <div class="number" id="totalStudents">0</div>
+                    <div class="label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">📈</div>
+                    <div class="number" id="overallAvg">0%</div>
+                    <div class="label">Overall Average</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">✅</div>
+                    <div class="number" id="overallPassRate">0%</div>
+                    <div class="label">Pass Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">🏆</div>
+                    <div class="number" id="bestSubject">-</div>
+                    <div class="label">Best Subject</div>
+                </div>
+            </div>
+
+            <!-- Grade Performance -->
+            <div class="section-card">
+                <h2>🎓 Performance by Grade</h2>
+                <div class="grade-performance" id="gradePerformance">
+                    <p style="color: var(--text-muted); text-align: center; width: 100%;">Loading grade data...</p>
+                </div>
+            </div>
+
+            <!-- Subject Performance -->
+            <div class="section-card">
+                <h2>📚 Subject Performance</h2>
+                <div class="subject-performance" id="subjectPerformance">
+                    <p style="color: var(--text-muted); text-align: center; width: 100%;">Loading subject data...</p>
+                </div>
+            </div>
+
+            <!-- All Students -->
+            <div class="section-card">
+                <h2>👨‍🎓 All Students Performance</h2>
+                <div style="overflow-x: auto;">
+                    <table class="student-list-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Grade</th>
+                                <th>Subjects</th>
+                                <th>Average</th>
+                                <th>Status</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allStudentsTable">
+                            <tr>
+                                <td colspan="6" style="text-align:center; color: var(--text-muted);">Loading students...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
