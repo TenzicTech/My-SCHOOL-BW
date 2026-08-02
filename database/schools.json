@@ -1,0 +1,14 @@
+[
+  {
+    "id": "SCH001",
+    "name": "Gaborone Primary School",
+    "location": "Gaborone, Botswana",
+    "type": "Public",
+    "phone": "+267 72 123 456",
+    "email": "info@gaboroneprimary.bw",
+    "students": 0,
+    "teachers": 0,
+    "verified": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+]
