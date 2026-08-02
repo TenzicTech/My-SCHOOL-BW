@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Progress - MY SCHOOL BW</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* Keep all existing styles - they are the same */
+        .progress-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+        }
+        .progress-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .progress-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .progress-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .child-selector {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .child-selector button {
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+        }
+        .child-selector button.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .child-selector button:hover {
+            color: var(--text-primary);
+        }
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-card .label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0 1.5rem;
+            color: var(--text-muted);
+        }
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-glass);
+        }
+        .section-divider .icon {
+            font-size: 1.5rem;
+        }
+        .test-history {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .test-history h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-glass);
+            transition: var(--transition);
+        }
+        .test-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .test-item:last-child {
+            border-bottom: none;
+        }
+        .test-item .info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .test-item .info .subject {
+            font-weight: 600;
+        }
+        .test-item .info .grade {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .test-item .info .date {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .test-item .info .source {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.6rem;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .test-item .info .source.admin {
+            background: rgba(96, 165, 250, 0.15);
+            color: #93c5fd;
+        }
+        .test-item .info .source.parent {
+            background: rgba(52, 211, 153, 0.15);
+            color: #86efac;
+        }
+        .test-item .score {
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+        }
+        .score.pass {
+            color: #86efac;
+            background: rgba(34, 197, 94, 0.15);
+        }
+        .score.fail {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.15);
+        }
+        .score.pending {
+            color: #ffd54f;
+            background: rgba(255, 193, 7, 0.15);
+        }
+        .no-tests {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+        .no-tests .icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .back-btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font-family);
+            margin-top: 1rem;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .report-comment {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 0.3rem 0.8rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius-sm);
+            margin-top: 0.3rem;
+        }
+        @media (max-width: 768px) {
+            .progress-header h1 {
+                font-size: 1.8rem;
+            }
+            .test-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            .test-item .info {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+            .progress-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .progress-stats {
+                grid-template-columns: 1fr;
+            }
+            .child-selector button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="orb orb-5"></div>
+
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="topnav">
+            <div class="brand">MY<span>SCHOOL</span>BW</div>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="index.html">HOME</a>
+            <a href="registration.html">REGISTRATION</a>
+            <a href="account.html">MY ACCOUNT</a>
+            <a href="level.html">EDUCATION LEVELS</a>
+            <a href="subjects.html">SUBJECTS</a>
+            <a href="tests.html">QUICK TESTS</a>
+            <a href="administration.html">ADMINISTRATION</a>
+            <a href="school-selector.html">SCHOOLS</a>
+            <div class="search-container">
+                <form id="search-form">
+                    <input type="text" placeholder="Search.." name="search" id="search-input">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="results-container" id="search-results" style="display: none;"></div>
+        </div>
+
+        <!-- Progress Content -->
+        <div class="progress-container">
+            <div class="progress-header">
+                <h1>📊 Child Progress</h1>
+                <p>View academic progress from teachers and quick test results</p>
+            </div>
+
+            <!-- Child Selector -->
+            <div class="child-selector" id="childSelector">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Stats -->
+            <div class="progress-stats" id="progressStats">
+                <div class="stat-card">
+                    <div class="number" id="totalTests">0</div>
+                    <div class="label">📝 Total Assessments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="passRate">0%</div>
+                    <div class="label">✅ Pass Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="avgScore">0%</div>
+                    <div class="label">📊 Average Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="bestSubject">-</div>
+                    <div class="label">🏆 Best Subject</div>
+                </div>
+            </div>
+
+            <!-- Admin Reports Section -->
+            <div class="section-divider">
+                <span class="icon">🏫</span>
+                <span>Teacher Reports & Report Cards</span>
+            </div>
+            <div class="test-history">
+                <h3>📋 Report Cards (From Teachers)</h3>
+                <div id="adminReportsContainer">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Quick Tests Section -->
+            <div class="section-divider">
+                <span class="icon">📝</span>
+                <span>Quick Tests (Parent Administered)</span>
+            </div>
+            <div class="test-history">
+                <h3>🧪 Quick Test Results</h3>
+                <div id="quickTestsContainer">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="window.location.href='account.html'">← Back to Account</button>
+        </div>
+    </div>
+    <!-- ===== UNIVERSAL SCRIPT ===== -->
+ <script src="js/script.js"></script>
+</body>
+</html>
