@@ -1061,4 +1061,12 @@ a {
     .featured-btn.next {
         right: 4px;
     }
+    /* ===== MOBILE MENU FIX ===== */
+@media (max-width: 768px) {
+    .topnav a.mobile-show {
+        display: block !important;
+    }
+    .topnav .search-container.mobile-show {
+        display: flex !important;
+    }
 }
