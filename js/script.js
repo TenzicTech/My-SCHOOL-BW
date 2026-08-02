@@ -8,6 +8,45 @@
 
 const API_URL = 'https://my-school-bw-c0gh.onrender.com/api';
 
+/// ============================================================
+// ===== SIGNUP TAB VARIABLE =====
+// ============================================================
+
+let currentSignupTab = 'parent';
+
+// ============================================================
+// ===== SIGNUP TAB SWITCHING =====
+// ============================================================
+
+function switchSignupTab(tab) {
+    currentSignupTab = tab;
+    
+    // Update tab buttons
+    document.querySelectorAll('.signup-tabs button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Update panels
+    document.querySelectorAll('.signup-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    if (tab === 'parent') {
+        const parentBtn = document.querySelector('.signup-tabs button:first-child');
+        if (parentBtn) parentBtn.classList.add('active');
+        const parentPanel = document.getElementById('parentSignup');
+        if (parentPanel) parentPanel.classList.add('active');
+        const submitBtn = document.getElementById('signupSubmitBtn');
+        if (submitBtn) submitBtn.textContent = 'Create Parent Account';
+    } else {
+        const schoolBtn = document.querySelector('.signup-tabs button:last-child');
+        if (schoolBtn) schoolBtn.classList.add('active');
+        const schoolPanel = document.getElementById('schoolSignup');
+        if (schoolPanel) schoolPanel.classList.add('active');
+        const submitBtn = document.getElementById('signupSubmitBtn');
+        if (submitBtn) submitBtn.textContent = 'Register School';
+    }
+}
 // ============================================================
 // ===== TOKEN MANAGEMENT =====
 // ============================================================
@@ -61,7 +100,6 @@ console.log('✅ Connected to API:', API_URL);
 // ===== ANIMATED BACKGROUND =====
 // ============================================================
 function initAnimatedBackground() {
-    // Check if stars already exist
     if (document.querySelector('.star')) return;
     
     const starsContainer = document.createElement('div');
@@ -113,12 +151,7 @@ function initSearch() {
     const searchForm = document.getElementById('search-form');
     if (!searchForm) return;
     
-    // Define searchable content based on current page
     const getSearchResults = (query) => {
-        const page = window.location.pathname.split('/').pop() || 'index.html';
-        const results = [];
-        
-        // Common pages
         const pages = [
             { title: 'Home', description: 'Welcome to MY SCHOOL BW.', url: 'index.html' },
             { title: 'Registration', description: 'Register your child for school.', url: 'registration.html' },
@@ -131,7 +164,6 @@ function initSearch() {
             { title: 'School Profile', description: 'View school information.', url: 'school-profile.html' },
             { title: 'Child Progress', description: 'View your child\'s progress.', url: 'progress.html' }
         ];
-        
         return pages.filter(p => 
             p.title.toLowerCase().includes(query.toLowerCase()) || 
             p.description.toLowerCase().includes(query.toLowerCase())
@@ -190,7 +222,6 @@ function loadSelectedSchool() {
     const school = getSelectedSchool();
     const schoolId = getSelectedSchoolId();
     
-    // Update school displays on the page
     const schoolNameElements = document.querySelectorAll('[data-school-name]');
     schoolNameElements.forEach(el => {
         el.textContent = school ? school.name : 'Not selected';
@@ -234,14 +265,29 @@ function redirectIfLoggedIn() {
     return false;
 }
 
-function logout() {
+// ============================================================
+// ===== LOGOUT FUNCTION =====
+// ============================================================
+
+function logoutUser() {
     if (confirm('Are you sure you want to logout?')) {
-        removeToken();
+        // Clear all user data
+        localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('selectedChildId');
+        localStorage.removeItem('selectedSchool');
+        localStorage.removeItem('selectedSchoolId');
+        sessionStorage.removeItem('pendingPassword');
+        sessionStorage.removeItem('pendingEmail');
+        
         window.location.href = 'index.html';
     }
+}
+
+// Keep this for compatibility with any old code
+function logout() {
+    logoutUser();
 }
 
 // ============================================================
@@ -311,7 +357,11 @@ async function verifyAccount() {
                 localStorage.setItem('user', JSON.stringify(loginResponse.user));
                 localStorage.setItem('isLoggedIn', 'true');
                 setTimeout(() => {
-                    window.location.href = 'account.html';
+                    if (loginResponse.user.isSchoolAdmin) {
+                        window.location.href = 'school-home.html';
+                    } else {
+                        window.location.href = 'parent-home.html';
+                    }
                 }, 1000);
             }
         }
@@ -334,12 +384,256 @@ async function resendVerificationCode() {
 }
 
 // ============================================================
+// ===== COMPLETE FORGOT PASSWORD SYSTEM =====
+// ============================================================
+
+// Store reset codes temporarily (in production, use server)
+let resetCodeStorage = {};
+
+// Step 1: Send reset code to email
+async function sendResetCode() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        showError('forgot-email-error', 'Please enter a valid email.');
+        return;
+    }
+    hideError('forgot-email-error');
+
+    // Check if email exists in system
+    const checkResponse = await apiCall('/users/check', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+    });
+
+    if (!checkResponse.success) {
+        showAlert('danger', 'No account found with this email.', 'forgotAlert');
+        return;
+    }
+
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store code (in production, this would be on server)
+    resetCodeStorage[email] = {
+        code: code,
+        timestamp: Date.now(),
+        verified: false
+    };
+
+    // Send code via email (simulated)
+    console.log(`📧 Password reset code for ${email}: ${code}`);
+    
+    // Show code in alert for demo (remove in production)
+    alert(`📧 Password Reset Code for ${email}: ${code}\n\n(This would be sent to your email in production)`);
+
+    showAlert('success', '📧 Password reset code sent to your email.', 'forgotAlert');
+    
+    // Move to step 2
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+}
+
+// Step 2: Verify reset code and reset password
+async function resetPassword() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const code = document.getElementById('reset-code').value.trim();
+    const newPassword = document.getElementById('new-password').value;
+    const confirmNew = document.getElementById('confirm-new-password').value;
+
+    // Validate code
+    if (!code || code.length !== 6 || isNaN(code)) {
+        showError('reset-code-error', 'Please enter a valid 6-digit code.');
+        return;
+    }
+    hideError('reset-code-error');
+
+    // Validate password
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+        showError('new-password-error', 'Password must be 8+ characters with a number and special character.');
+        return;
+    }
+    hideError('new-password-error');
+
+    // Validate confirm
+    if (newPassword !== confirmNew) {
+        showError('confirm-new-password-error', 'Passwords do not match.');
+        return;
+    }
+    hideError('confirm-new-password-error');
+
+    // Verify the code
+    const stored = resetCodeStorage[email];
+    if (!stored) {
+        showAlert('danger', 'No reset code found. Please request a new one.', 'forgotAlert');
+        return;
+    }
+
+    // Check if code expired (10 minutes)
+    if (Date.now() - stored.timestamp > 600000) {
+        showAlert('danger', 'Code expired. Please request a new one.', 'forgotAlert');
+        delete resetCodeStorage[email];
+        return;
+    }
+
+    if (stored.code !== code) {
+        showError('reset-code-error', 'Invalid code. Please try again.');
+        return;
+    }
+
+    // Call API to reset password
+    const response = await apiCall('/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ email, code, newPassword })
+    });
+
+    if (response.success) {
+        // Clear stored code
+        delete resetCodeStorage[email];
+        
+        showAlert('success', '✅ Password reset successfully! Please login.', 'forgotAlert');
+        
+        // Reset form and go back to login
+        setTimeout(() => {
+            document.getElementById('forgotPasswordForm').reset();
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            showLogin();
+        }, 2000);
+    } else {
+        showAlert('danger', response.message || 'Failed to reset password. Please try again.', 'forgotAlert');
+    }
+}
+
+// ============================================================
+// ===== COMPLETE EMAIL VERIFICATION SYSTEM =====
+// ============================================================
+
+// Store verification codes temporarily
+let verificationCodeStorage = {};
+
+// Send verification code (for signup)
+async function sendVerificationCode(email) {
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store code
+    verificationCodeStorage[email] = {
+        code: code,
+        timestamp: Date.now(),
+        verified: false
+    };
+
+    // Send code via email (simulated)
+    console.log(`📧 Verification code for ${email}: ${code}`);
+    
+    // Show code in alert for demo (remove in production)
+    alert(`📧 Verification Code for ${email}: ${code}\n\n(This would be sent to your email in production)`);
+
+    return code;
+}
+
+// Verify email code
+async function verifyEmailCode(email, code) {
+    const stored = verificationCodeStorage[email];
+    
+    if (!stored) {
+        return { success: false, message: 'No verification code found. Please request a new one.' };
+    }
+
+    // Check if code expired (10 minutes)
+    if (Date.now() - stored.timestamp > 600000) {
+        delete verificationCodeStorage[email];
+        return { success: false, message: 'Code expired. Please request a new one.' };
+    }
+
+    if (stored.code !== code) {
+        return { success: false, message: 'Invalid code. Please try again.' };
+    }
+
+    stored.verified = true;
+    return { success: true, message: 'Email verified successfully!' };
+}
+
+// Resend verification code
+async function resendVerificationCode() {
+    if (!pendingVerificationEmail) return;
+
+    const code = await sendVerificationCode(pendingVerificationEmail);
+    
+    if (code) {
+        // Update server with new code
+        await apiCall('/resend-verification', {
+            method: 'POST',
+            body: JSON.stringify({ email: pendingVerificationEmail, code })
+        });
+        
+        showAlert('info', 'New verification code sent to your email.', 'signupAlert');
+    }
+}
+
+// ============================================================
+// ===== UPDATE VERIFY ACCOUNT FUNCTION =====
+// ============================================================
+
+// Replace your existing verifyAccount() with this:
+async function verifyAccount() {
+    const codeInput = document.getElementById('verification-code');
+    const email = pendingVerificationEmail;
+    
+    if (!codeInput || !email) return;
+    
+    const code = codeInput.value.trim();
+    if (!code || code.length !== 6) {
+        showError('verification-code-error', 'Please enter a valid 6-digit code.');
+        return;
+    }
+
+    // Verify the code
+    const result = await verifyEmailCode(email, code);
+
+    if (result.success) {
+        closeVerificationModal();
+        showAlert('success', '✅ Email verified successfully!', 'signupAlert');
+        
+        // Update server
+        await apiCall('/verify', {
+            method: 'POST',
+            body: JSON.stringify({ email, code })
+        });
+        
+        const pendingPassword = sessionStorage.getItem('pendingPassword');
+        if (pendingPassword) {
+            const loginResponse = await apiCall('/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password: pendingPassword })
+            });
+            if (loginResponse.success) {
+                setToken(loginResponse.token);
+                localStorage.setItem('user', JSON.stringify(loginResponse.user));
+                localStorage.setItem('isLoggedIn', 'true');
+                setTimeout(() => {
+                    if (loginResponse.user.isSchoolAdmin) {
+                        window.location.href = 'school-home.html';
+                    } else {
+                        window.location.href = 'parent-home.html';
+                    }
+                }, 1000);
+            }
+        }
+    } else {
+        showError('verification-code-error', result.message || 'Invalid code.');
+    }
+}
+
+// ============================================================
 // ===== UTILITY FUNCTIONS =====
 // ============================================================
 function showAlert(type, message, containerId) {
     const alert = document.getElementById(containerId);
     if (!alert) {
-        // Fallback: use alert() if container not found
         alert(message);
         return;
     }
@@ -368,19 +662,22 @@ function getQueryParam(param) {
 // ============================================================
 // ===== PAGE-SPECIFIC INITIALIZATIONS =====
 // ============================================================
+
 function initPage() {
     const page = window.location.pathname.split('/').pop() || 'index.html';
     
-    // Initialize common components
     initAnimatedBackground();
     initHamburgerMenu();
     initSearch();
     loadSelectedSchool();
     
-    // Page-specific initialization
     switch(page) {
         case 'index.html':
             initIndexPage();
+            // Initialize signup tabs if on index page
+            if (document.querySelector('.signup-tabs')) {
+                switchSignupTab('parent');
+            }
             break;
         case 'account.html':
             initAccountPage();
@@ -418,6 +715,20 @@ function initPage() {
         case 'administration.html':
             initAdministrationPage();
             break;
+        case 'parent-home.html':
+            loadParentDashboard();
+            break;
+        case 'school-home.html':
+            loadSchoolDashboard();
+            break;
+        case 'school-account.html':
+            loadSchoolAccount();
+            break;
+        case 'school-progress.html':
+            loadSchoolProgress();
+            break;
+        default:
+            console.log('Page not recognized:', page);
     }
 }
 
@@ -425,13 +736,8 @@ function initPage() {
 // ===== PAGE: INDEX (Login/Signup) =====
 // ============================================================
 function initIndexPage() {
-    // Check if already logged in
     if (redirectIfLoggedIn()) return;
-    
-    // Load school if selected
     loadSelectedSchool();
-    
-    // Show login form by default
     showLogin();
 }
 
@@ -440,6 +746,10 @@ function showSignup() {
     document.getElementById('signup-form').style.display = 'block';
     document.getElementById('forgot-password-form').style.display = 'none';
     hideAlerts();
+    // Reset to parent tab
+    if (document.querySelector('.signup-tabs')) {
+        switchSignupTab('parent');
+    }
 }
 
 function showLogin() {
@@ -462,190 +772,79 @@ function hideAlerts() {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
 }
 
-// Login Form
-document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const schoolId = document.getElementById('login-school-id').value;
+// ============================================================
+// ===== LOGIN FORM HANDLER - INTELLIGENT VERSION =====
+// ============================================================
 
-            if (!schoolId) {
-                alert('Please select a school first.');
-                window.location.href = 'school-selector.html';
-                return;
-            }
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const schoolId = document.getElementById('login-school-id').value;
 
-            const response = await apiCall('/login', {
-                method: 'POST',
-                body: JSON.stringify({ email, password })
-            });
+        if (!schoolId) {
+            alert('Please select a school first.');
+            window.location.href = 'school-selector.html';
+            return;
+        }
 
-            if (response.success) {
-                setToken(response.token);
-                localStorage.setItem('user', JSON.stringify(response.user));
-                localStorage.setItem('isLoggedIn', 'true');
-                
-                const school = getSelectedSchool();
-                if (school) {
-                    setSelectedSchool(school);
-                }
-                
-                showAlert('success', '✅ Login successful! Redirecting...', 'loginAlert');
-                setTimeout(() => {
-                    window.location.href = 'account.html';
-                }, 1000);
-            } else if (response.needsVerification) {
-                pendingVerificationEmail = email;
-                showVerificationModal(email);
-                showAlert('info', 'Please verify your email first. Check your inbox.', 'loginAlert');
-            } else {
-                showAlert('danger', response.message || 'Invalid email or password.', 'loginAlert');
-            }
+        const response = await apiCall('/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
         });
-    }
 
-    // Signup Form
-    const signupForm = document.getElementById('signupForm');
-    if (signupForm) {
-        signupForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            let valid = true;
-
-            const username = document.getElementById('signup-username').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const phone = document.getElementById('signup-phone').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const confirm = document.getElementById('confirm-password').value;
-            const schoolId = document.getElementById('login-school-id').value;
-
-            if (!schoolId) {
-                alert('Please select a school first.');
-                window.location.href = 'school-selector.html';
-                return;
+        if (response.success) {
+            setToken(response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            const school = getSelectedSchool();
+            if (school) {
+                setSelectedSchool(school);
             }
-
-            // Validate
-            if (!username || username.length < 2) {
-                showError('signup-username-error', 'Please enter your full name.');
-                valid = false;
-            } else {
-                hideError('signup-username-error');
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showError('signup-email-error', 'Please enter a valid email.');
-                valid = false;
-            } else {
-                hideError('signup-email-error');
-            }
-
-            if (phone.length < 8) {
-                showError('signup-phone-error', 'Please enter a valid phone number.');
-                valid = false;
-            } else {
-                hideError('signup-phone-error');
-            }
-
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-            if (!passwordRegex.test(password)) {
-                showError('signup-password-error', 'Password must be 8+ characters with a number and special character.');
-                valid = false;
-            } else {
-                hideError('signup-password-error');
-            }
-
-            if (password !== confirm) {
-                showError('confirm-password-error', 'Passwords do not match.');
-                valid = false;
-            } else {
-                hideError('confirm-password-error');
-            }
-
-            if (valid) {
-                const response = await apiCall('/signup', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, email, password, phone, schoolId })
-                });
-
-                if (response.success) {
-                    pendingVerificationEmail = email;
-                    sessionStorage.setItem('pendingPassword', password);
-                    showVerificationModal(email);
-                    showAlert('info', 'Verification code sent to your email. Please check your inbox.', 'signupAlert');
+            
+            showAlert('success', '✅ Login successful! Redirecting...', 'loginAlert');
+            setTimeout(() => {
+                // ===== INTELLIGENT REDIRECT =====
+                // Check if the user is a school admin or parent
+                if (response.user.isSchoolAdmin === true) {
+                    window.location.href = 'school-home.html';
                 } else {
-                    showAlert('danger', response.message || 'Signup failed. Please try again.', 'signupAlert');
+                    window.location.href = 'parent-home.html';
                 }
-            }
-        });
-    }
+            }, 1000);
+        } else if (response.needsVerification) {
+            pendingVerificationEmail = email;
+            showVerificationModal(email);
+            showAlert('info', 'Please verify your email first. Check your inbox.', 'loginAlert');
+        } else {
+            showAlert('danger', response.message || 'Invalid email or password.', 'loginAlert');
+        }
+    });
+}
 
-    // Forgot Password
-    const forgotForm = document.getElementById('forgotPasswordForm');
-    if (forgotForm) {
-        window.sendResetCode = async function() {
-            const email = document.getElementById('forgot-email').value.trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // ============================================================
+// ===== SIGNUP FORM HANDLER - INTELLIGENT VERSION =====
+// ============================================================
 
-            if (!emailRegex.test(email)) {
-                showError('forgot-email-error', 'Please enter a valid email.');
-                return;
-            }
-            hideError('forgot-email-error');
-
-            const response = await apiCall('/forgot-password', {
-                method: 'POST',
-                body: JSON.stringify({ email })
-            });
-
-            if (response.success) {
-                showAlert('success', '📧 Password reset code sent to your email.', 'forgotAlert');
-                document.getElementById('step1').classList.remove('active');
-                document.getElementById('step2').classList.add('active');
-            } else {
-                showAlert('danger', response.message || 'No account found with this email.', 'forgotAlert');
-            }
-        };
-
-        window.resetPassword = async function() {
-            const email = document.getElementById('forgot-email').value.trim();
-            const code = document.getElementById('reset-code').value.trim();
-            const newPassword = document.getElementById('new-password').value;
-            const confirmNew = document.getElementById('confirm-new-password').value;
-
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-            if (!passwordRegex.test(newPassword)) {
-                showError('new-password-error', 'Password must be 8+ characters with a number and special character.');
-                return;
-            }
-            hideError('new-password-error');
-
-            if (newPassword !== confirmNew) {
-                showError('confirm-new-password-error', 'Passwords do not match.');
-                return;
-            }
-            hideError('confirm-new-password-error');
-
-            const response = await apiCall('/reset-password', {
-                method: 'POST',
-                body: JSON.stringify({ email, code, newPassword })
-            });
-
-            if (response.success) {
-                showAlert('success', '✅ Password reset successfully! Please login.', 'forgotAlert');
-                setTimeout(() => showLogin(), 1500);
-            } else {
-                showAlert('danger', response.message || 'Invalid or expired code.', 'forgotAlert');
-            }
-        };
-    }
-});
+const signupForm = document.getElementById('signupForm');
+if (signupForm) {
+    signupForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Determine which signup type
+        if (currentSignupTab === 'parent') {
+            await handleParentSignup();
+        } else {
+            await handleSchoolSignup();
+        }
+    });
+}
 
 // ============================================================
-// ===== PAGE: ACCOUNT =====
+// ===== PAGE: ACCOUNT (Parent) =====
 // ============================================================
 function initAccountPage() {
     if (!requireAuth()) return;
@@ -667,7 +866,6 @@ async function loadUserData() {
             window.location.href = 'index.html';
             return;
         }
-        // Fallback to localStorage
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) {
             window.location.href = 'index.html';
@@ -683,7 +881,6 @@ async function loadUserData() {
 }
 
 function loadUserFromLocal(user) {
-    // Update profile
     const nameEl = document.getElementById('userName');
     const emailEl = document.getElementById('userEmail');
     const dateEl = document.getElementById('registerDate');
@@ -692,14 +889,12 @@ function loadUserFromLocal(user) {
     if (emailEl) emailEl.textContent = user.email || 'No email';
     if (dateEl) dateEl.textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Not available';
 
-    // Load school info
     const school = getSelectedSchool();
     const schoolNameEl = document.getElementById('accountSchoolName');
     if (schoolNameEl) {
         schoolNameEl.textContent = school ? school.name : 'No school selected';
     }
 
-    // Load children
     loadChildren(user.email);
 }
 
@@ -707,11 +902,9 @@ async function loadChildren(guardianEmail) {
     const response = await apiCall(`/students/guardian/${encodeURIComponent(guardianEmail)}`);
     const children = response.success ? response.students : [];
 
-    // Update children count
     const countEl = document.getElementById('childrenCount');
     if (countEl) countEl.textContent = children.length;
 
-    // Update account status
     const user = JSON.parse(localStorage.getItem('user'));
     const statusEl = document.getElementById('accountStatus');
     const badgeEl = document.getElementById('userBadge');
@@ -728,7 +921,6 @@ async function loadChildren(guardianEmail) {
             badgeEl.className = 'badge unverified';
             badgeEl.textContent = '⏳ Please Verify';
         }
-        // Add verify button if not present
         const profileCard = document.querySelector('.profile-card');
         if (profileCard && !profileCard.querySelector('.btn-verify')) {
             const verifyBtn = document.createElement('button');
@@ -750,7 +942,6 @@ async function loadChildren(guardianEmail) {
         }
     }
 
-    // Display children
     const container = document.getElementById('childrenList');
     if (!container) return;
 
@@ -780,7 +971,6 @@ async function loadChildren(guardianEmail) {
         `).join('');
     }
 
-    // Update avatar
     const avatar = document.getElementById('userAvatar');
     if (avatar) {
         const name = user?.username || 'User';
@@ -797,9 +987,7 @@ function viewProgress(childId) {
 // ===== PAGE: REGISTRATION =====
 // ============================================================
 function initRegistrationPage() {
-    // Check if logged in, if not, still allow registration but with warning
     if (!isLoggedIn()) {
-        // Allow registration but show a note
         const alert = document.getElementById('autofillAlert');
         if (alert) {
             alert.style.display = 'block';
@@ -818,7 +1006,6 @@ async function loadGuardianData() {
     const response = await apiCall('/me');
     if (response.success) {
         const user = response.user;
-        // Auto-fill guardian fields
         if (user.username) {
             const nameParts = user.username.split(' ');
             const firstNameEl = document.getElementById('guardian-first-name');
@@ -865,7 +1052,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Validate all fields
             const fields = [
                 { id: 'child-first-name', error: 'child-first-name-error' },
                 { id: 'child-last-name', error: 'child-last-name-error' },
@@ -887,7 +1073,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Validate email
             const email = document.getElementById('guardian-email').value.trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
@@ -895,14 +1080,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 valid = false;
             }
 
-            // Validate phone
             const phone = document.getElementById('guardian-phone').value.trim();
             if (phone.length < 8) {
                 showError('guardian-phone-error', 'Please enter a valid phone number.');
                 valid = false;
             }
 
-            // Validate password
             const password = document.getElementById('register-password').value;
             const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
             if (!passwordRegex.test(password)) {
@@ -910,7 +1093,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 valid = false;
             }
 
-            // Validate confirm password
             const confirm = document.getElementById('confirm-password').value;
             if (password !== confirm) {
                 showError('confirm-password-error', 'Passwords do not match.');
@@ -962,7 +1144,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function initAdminDashboard() {
     if (!requireAuth()) return;
     
-    // Load admin info
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
         const nameEl = document.getElementById('adminName');
@@ -1101,13 +1282,10 @@ async function loadStats() {
 function loadStudentSelect() {
     const select = document.getElementById('reportStudent');
     if (!select) return;
-    
-    // This will be populated when adding reports
 }
 
 // Admin Dashboard Form Handlers
 document.addEventListener('DOMContentLoaded', function() {
-    // Add Student Form
     const addStudentForm = document.getElementById('addStudentForm');
     if (addStudentForm) {
         addStudentForm.addEventListener('submit', async function(e) {
@@ -1140,7 +1318,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add Report Form
     const addReportForm = document.getElementById('addReportForm');
     if (addReportForm) {
         addReportForm.addEventListener('submit', async function(e) {
@@ -1172,7 +1349,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add Teacher Form
     const addTeacherForm = document.getElementById('addTeacherForm');
     if (addTeacherForm) {
         addTeacherForm.addEventListener('submit', async function(e) {
@@ -1273,7 +1449,6 @@ const questionBank = {
                 { q: 'What is 4 + 4?', options: ['A) 6', 'B) 7', 'C) 8', 'D) 9'], answer: 'C' }
             ]
         },
-        // ... more grades would be added here
     },
     english: {
         1: {
@@ -1286,7 +1461,6 @@ const questionBank = {
                 { q: 'What is the opposite of "happy"?', options: ['A) Sad', 'B) Joyful', 'C) Happy', 'D) Glad'], answer: 'A' }
             ]
         }
-        // ... more grades would be added here
     },
     science: {
         1: {
@@ -1299,7 +1473,6 @@ const questionBank = {
                 { q: 'What is the color of the sun?', options: ['A) Blue', 'B) Yellow', 'C) Red', 'D) Green'], answer: 'B' }
             ]
         }
-        // ... more grades would be added here
     },
     setswana: {
         1: {
@@ -1312,7 +1485,6 @@ const questionBank = {
                 { q: 'What is "food" in Setswana?', options: ['A) Metsi', 'B) Mosi', 'C) Dijo', 'D) Mollo'], answer: 'C' }
             ]
         }
-        // ... more grades would be added here
     }
 };
 
@@ -1327,7 +1499,6 @@ function loadTest() {
     if (subjectSelect) currentSubject = subjectSelect.value;
     if (gradeSelect) currentGrade = parseInt(gradeSelect.value);
 
-    // Update display
     const subjectNames = { math: 'Mathematics', english: 'English', science: 'Science', setswana: 'Setswana' };
     const displaySubject = document.getElementById('displaySubject');
     const displayGrade = document.getElementById('displayGrade');
@@ -1345,7 +1516,6 @@ function loadTest() {
     const titleEl = document.getElementById('testTitle');
     if (titleEl) titleEl.textContent = questions.title;
 
-    // Render questions
     const container = document.getElementById('questionsContainer');
     if (!container) return;
     
@@ -1363,7 +1533,6 @@ function loadTest() {
         </div>
     `).join('');
 
-    // Reset progress and results
     const progressBar = document.getElementById('progressBar');
     if (progressBar) progressBar.style.width = '0%';
     const resultBox = document.getElementById('resultBox');
@@ -1387,13 +1556,11 @@ function submitTest() {
         }
     });
 
-    // Update progress
     const progressBar = document.getElementById('progressBar');
     if (progressBar) {
         progressBar.style.width = `${(answered / questions.length) * 100}%`;
     }
 
-    // Show result
     const resultBox = document.getElementById('resultBox');
     const scoreDisplay = document.getElementById('scoreDisplay');
     const feedback = document.getElementById('feedbackDisplay');
@@ -1416,7 +1583,6 @@ function submitTest() {
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) submitBtn.disabled = true;
 
-    // Save result to API
     saveTestResult(percentage, score, questions.length);
 }
 
@@ -1611,7 +1777,6 @@ function selectSchool(schoolId) {
 // ===== PAGE: SCHOOL REGISTRATION =====
 // ============================================================
 function initSchoolRegistration() {
-    // Add school registration form handler
     const form = document.getElementById('schoolRegForm');
     if (form) {
         form.addEventListener('submit', function(e) {
@@ -1622,7 +1787,6 @@ function initSchoolRegistration() {
 }
 
 function registerSchool() {
-    // Validate all fields
     const fields = [
         { id: 'schoolName', error: 'schoolName-error' },
         { id: 'schoolType', error: 'schoolType-error' },
@@ -1665,7 +1829,6 @@ function registerSchool() {
         adminPassword: document.getElementById('adminPassword').value
     };
 
-    // Save to localStorage (since we're creating school + admin)
     const schools = getSchools();
     const newSchool = {
         id: 'SCH' + Date.now().toString(36).toUpperCase(),
@@ -1681,13 +1844,12 @@ function registerSchool() {
     schools.push(newSchool);
     saveSchools(schools);
 
-    // Create admin user
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const adminUser = {
         id: 'USR' + Date.now().toString(36).toUpperCase(),
         username: schoolData.adminName,
         email: schoolData.adminEmail,
-        password: schoolData.adminPassword, // In production, this would be hashed
+        password: schoolData.adminPassword,
         phone: schoolData.adminPhone || '',
         schoolId: newSchool.id,
         isSchoolAdmin: true,
@@ -1697,7 +1859,6 @@ function registerSchool() {
     users.push(adminUser);
     localStorage.setItem('users', JSON.stringify(users));
 
-    // Auto-login
     setSelectedSchool(newSchool);
     localStorage.setItem('user', JSON.stringify(adminUser));
     localStorage.setItem('isLoggedIn', 'true');
@@ -1777,14 +1938,14 @@ function loadSchoolProfile() {
 }
 
 // ============================================================
-// ===== PAGE: PROGRESS =====
+// ===== PAGE: PROGRESS (Parent) =====
 // ============================================================
 function initProgressPage() {
     if (!requireAuth()) return;
-    loadChildren();
+    loadChildrenForProgress();
 }
 
-async function loadChildren() {
+async function loadChildrenForProgress() {
     const user = JSON.parse(localStorage.getItem('user'));
     const school = getSelectedSchool();
     
@@ -1831,7 +1992,6 @@ async function loadChildProgress(childId) {
     const reports = reportsResponse.success ? reportsResponse.reports : [];
     const tests = testsResponse.success ? testsResponse.results : [];
 
-    // Update stats
     const allAssessments = [
         ...reports.map(r => ({ score: r.score, type: 'admin' })),
         ...tests.map(t => ({ score: t.score, type: 'parent' }))
@@ -1849,7 +2009,6 @@ async function loadChildProgress(childId) {
         document.getElementById('avgScore').textContent = `${Math.round(avgScore)}%`;
     }
 
-    // Render reports
     const adminContainer = document.getElementById('adminReportsContainer');
     if (adminContainer) {
         if (reports.length === 0) {
@@ -1875,7 +2034,6 @@ async function loadChildProgress(childId) {
         }
     }
 
-    // Render tests
     const testsContainer = document.getElementById('quickTestsContainer');
     if (testsContainer) {
         if (tests.length === 0) {
@@ -1943,7 +2101,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Resend code function
     window.resendCode = async function() {
         const email = document.getElementById('verify-email').value.trim();
         if (!email) {
@@ -1967,10 +2124,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 // ===== PAGE: LEVEL =====
 // ============================================================
-function initLevelPage() {
-    // Level data is already in the HTML
-    // Just ensure the detail view works
-}
+function initLevelPage() {}
 
 function showLevelDetail(level) {
     const levelData = {
@@ -2010,9 +2164,7 @@ function closeLevelDetail() {
 // ============================================================
 // ===== PAGE: SUBJECTS =====
 // ============================================================
-function initSubjectsPage() {
-    // Subjects page is static HTML with JavaScript functions
-}
+function initSubjectsPage() {}
 
 function enrollSubject(subject) {
     document.getElementById('enroll-section').style.display = 'block';
@@ -2058,7 +2210,6 @@ function toggleHelp(card) {
     
     if (!detail || !btn) return;
     
-    // Close all other help details
     document.querySelectorAll('.admin-card .help-detail').forEach(d => {
         if (d !== detail && d.classList.contains('show')) {
             d.classList.remove('show');
@@ -2070,6 +2221,561 @@ function toggleHelp(card) {
     detail.classList.toggle('show');
     btn.classList.toggle('active');
     btn.textContent = detail.classList.contains('show') ? 'Hide Help' : 'Get Help';
+}
+
+// ============================================================
+// ===== PARENT HOME PAGE FUNCTIONS =====
+// ============================================================
+async function loadParentDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const nameEl = document.getElementById('parentName');
+    if (nameEl) nameEl.textContent = user.username || 'Parent';
+
+    const school = getSelectedSchool();
+    if (school) {
+        const schoolBadge = document.getElementById('parentSchool');
+        if (schoolBadge) schoolBadge.textContent = '🏫 ' + school.name;
+        
+        document.getElementById('schoolNameDisplay').textContent = school.name || 'N/A';
+        document.getElementById('schoolLocationDisplay').textContent = school.location || 'N/A';
+        document.getElementById('schoolPhoneDisplay').textContent = school.phone || 'N/A';
+        document.getElementById('schoolEmailDisplay').textContent = school.email || 'N/A';
+        document.getElementById('schoolStudentsCount').textContent = school.students || 0;
+        document.getElementById('schoolTeachersCount').textContent = school.teachers || 0;
+    }
+
+    const response = await apiCall(`/students/guardian/${encodeURIComponent(user.email)}`);
+    const children = response.success ? response.students : [];
+
+    const childrenList = document.getElementById('childrenList');
+    if (!childrenList) return;
+
+    if (children.length === 0) {
+        childrenList.innerHTML = `
+            <p style="color: var(--text-muted); text-align: center; padding: 1rem;">
+                No children registered yet. 
+                <a href="registration.html" style="color: #60A5FA;">Register your child here</a>
+            </p>
+        `;
+        document.getElementById('childrenCount').textContent = '0';
+        return;
+    }
+
+    document.getElementById('childrenCount').textContent = children.length;
+
+    let allScores = [];
+    let allTests = 0;
+
+    for (const child of children) {
+        const testResponse = await apiCall(`/test-results/child/${child.id}`);
+        if (testResponse.success) {
+            const tests = testResponse.results;
+            allTests += tests.length;
+            allScores.push(...tests.map(t => t.score));
+            
+            if (tests.length > 0) {
+                child.avgScore = Math.round(tests.reduce((a, b) => a + b.score, 0) / tests.length);
+            } else {
+                child.avgScore = 'N/A';
+            }
+        }
+    }
+
+    const avgScore = allScores.length > 0 ? allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
+    const passCount = allScores.filter(s => s >= 70).length;
+    const passRate = allScores.length > 0 ? (passCount / allScores.length) * 100 : 0;
+
+    document.getElementById('avgScore').textContent = Math.round(avgScore) + '%';
+    document.getElementById('passRate').textContent = Math.round(passRate) + '%';
+    document.getElementById('totalTests').textContent = allTests;
+
+    childrenList.innerHTML = children.map(child => `
+        <div class="child-card">
+            <div class="info">
+                <div class="avatar">${child.childFirstName ? child.childFirstName.charAt(0) : '👶'}</div>
+                <div>
+                    <div class="name">${child.fullName || child.childFirstName + ' ' + child.childLastName}</div>
+                    <div class="grade">Grade ${child.grade} • ${child.verified ? '✅ Verified' : '⏳ Pending'}</div>
+                </div>
+            </div>
+            <div class="progress">
+                <span class="score ${child.avgScore >= 70 ? 'pass' : 'fail'}">${child.avgScore || 'N/A'}</span>
+                <div class="progress-bar">
+                    <div class="fill" style="width: ${typeof child.avgScore === 'number' ? child.avgScore : 0}%;"></div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn-sm primary" onclick="viewProgress('${child.id}')">📊 Progress</button>
+                <button class="btn-sm" onclick="viewTests('${child.id}')">📝 Tests</button>
+            </div>
+        </div>
+    `).join('');
+
+    loadBooksForChildren(children);
+}
+
+function loadBooksForChildren(children) {
+    const booksGrid = document.getElementById('booksGrid');
+    if (!booksGrid) return;
+
+    const grades = [...new Set(children.map(c => c.grade))];
+    
+    const booksDatabase = {
+        1: [
+            { title: 'Mathematics Grade 1', icon: '📐', description: 'Basic numbers and counting' },
+            { title: 'English Reading', icon: '📖', description: 'Alphabet and simple words' },
+            { title: 'Science Explorer', icon: '🔬', description: 'Introduction to science' }
+        ],
+        2: [
+            { title: 'Mathematics Grade 2', icon: '📐', description: 'Addition and subtraction' },
+            { title: 'English Language', icon: '📖', description: 'Grammar and reading' },
+            { title: 'Science Discoveries', icon: '🔬', description: 'Simple experiments' }
+        ],
+        3: [
+            { title: 'Mathematics Grade 3', icon: '📐', description: 'Multiplication and division' },
+            { title: 'English Literature', icon: '📖', description: 'Stories and writing' },
+            { title: 'Science World', icon: '🔬', description: 'Plants and animals' }
+        ],
+        4: [
+            { title: 'Mathematics Grade 4', icon: '📐', description: 'Fractions and decimals' },
+            { title: 'English Composition', icon: '📖', description: 'Creative writing' },
+            { title: 'Science Universe', icon: '🔬', description: 'Solar system' }
+        ],
+        5: [
+            { title: 'Mathematics Grade 5', icon: '📐', description: 'Geometry and measurement' },
+            { title: 'English Studies', icon: '📖', description: 'Literature and grammar' },
+            { title: 'Science Quest', icon: '🔬', description: 'Human body' }
+        ],
+        6: [
+            { title: 'Mathematics Grade 6', icon: '📐', description: 'Algebra basics' },
+            { title: 'English Advanced', icon: '📖', description: 'Advanced writing' },
+            { title: 'Science Frontiers', icon: '🔬', description: 'Physics basics' }
+        ],
+        7: [
+            { title: 'Mathematics Grade 7', icon: '📐', description: 'Advanced algebra' },
+            { title: 'English Mastery', icon: '📖', description: 'Literature analysis' },
+            { title: 'Science Innovations', icon: '🔬', description: 'Chemistry basics' }
+        ]
+    };
+
+    let allBooks = [];
+    grades.forEach(grade => {
+        const books = booksDatabase[grade] || [];
+        allBooks = [...allBooks, ...books.map(book => ({ ...book, grade: grade }))];
+    });
+
+    if (allBooks.length === 0) {
+        booksGrid.innerHTML = `
+            <div class="book-card">
+                <div class="book-icon">📚</div>
+                <div class="book-title">No books assigned</div>
+                <div class="book-grade">Check with your teacher</div>
+            </div>
+        `;
+        return;
+    }
+
+    const uniqueBooks = allBooks.slice(0, 6);
+
+    booksGrid.innerHTML = uniqueBooks.map(book => `
+        <div class="book-card">
+            <div class="book-icon">${book.icon || '📚'}</div>
+            <div class="book-title">${book.title}</div>
+            <div class="book-grade">Grade ${book.grade}</div>
+        </div>
+    `).join('');
+}
+
+function viewTests(childId) {
+    localStorage.setItem('selectedChildId', childId);
+    window.location.href = 'tests.html';
+}
+
+// ============================================================
+// ===== SCHOOL ADMIN HOME PAGE FUNCTIONS =====
+// ============================================================
+async function loadSchoolDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const school = getSelectedSchool();
+    if (school) {
+        document.getElementById('schoolName').textContent = school.name;
+        document.getElementById('schoolId').textContent = 'ID: ' + school.id;
+    }
+
+    const studentsRes = await apiCall('/students');
+    const teachersRes = await apiCall('/teachers');
+    const reportsRes = await apiCall('/reports');
+
+    const students = studentsRes.success ? studentsRes.students : [];
+    const teachers = teachersRes.success ? teachersRes.teachers : [];
+    const reports = reportsRes.success ? reportsRes.reports : [];
+
+    document.getElementById('totalStudents').textContent = students.length;
+    document.getElementById('totalTeachers').textContent = teachers.length;
+    document.getElementById('totalReports').textContent = reports.length;
+
+    if (reports.length > 0) {
+        const avg = reports.reduce((sum, r) => sum + r.score, 0) / reports.length;
+        document.getElementById('avgPerformance').textContent = Math.round(avg) + '%';
+    } else {
+        document.getElementById('avgPerformance').textContent = 'N/A';
+    }
+
+    const tbody = document.getElementById('studentTableBody');
+    if (students.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center; color: var(--text-muted);">
+                    No students registered yet. 
+                    <a href="registration.html" style="color: #60A5FA;">Register your first student</a>
+                </td>
+            </tr>
+        `;
+    } else {
+        tbody.innerHTML = students.slice(0, 5).map(s => `
+            <tr>
+                <td><strong>${s.fullName || s.childFirstName + ' ' + s.childLastName}</strong></td>
+                <td>Grade ${s.grade}</td>
+                <td>${s.guardianEmail || 'N/A'}</td>
+                <td><span class="status-badge ${s.verified ? 'active' : 'pending'}">${s.verified ? '✅ Active' : '⏳ Pending'}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    const activity = document.getElementById('recentActivity');
+    const activities = [];
+
+    if (students.length > 0) {
+        const latest = students[students.length - 1];
+        activities.push({
+            time: new Date(latest.registrationDate).toLocaleDateString(),
+            action: `👨‍🎓 New student registered: <span class="highlight">${latest.fullName}</span>`
+        });
+    }
+
+    if (reports.length > 0) {
+        const latest = reports[reports.length - 1];
+        activities.push({
+            time: new Date(latest.date).toLocaleDateString(),
+            action: `📊 New report added: <span class="highlight">${latest.subject}</span> (${latest.score}%)`
+        });
+    }
+
+    if (teachers.length > 0) {
+        const latest = teachers[teachers.length - 1];
+        activities.push({
+            time: new Date(latest.addedAt).toLocaleDateString(),
+            action: `👩‍🏫 New teacher hired: <span class="highlight">${latest.fullName}</span>`
+        });
+    }
+
+    if (activities.length === 0) {
+        activity.innerHTML = `
+            <div class="activity-item">
+                <span class="time">--</span>
+                <div class="content">
+                    <span class="action">No activity yet. Start by adding students!</span>
+                </div>
+            </div>
+        `;
+    } else {
+        activity.innerHTML = activities.slice(0, 5).map(a => `
+            <div class="activity-item">
+                <span class="time">${a.time}</span>
+                <div class="content">
+                    <span class="action">${a.action}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// ============================================================
+// ===== SCHOOL ACCOUNT PAGE FUNCTIONS =====
+// ============================================================
+async function loadSchoolAccount() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const school = getSelectedSchool();
+    if (!school) {
+        alert('No school selected. Please select a school first.');
+        window.location.href = 'school-selector.html';
+        return;
+    }
+
+    document.getElementById('schoolIdDisplay').textContent = 'ID: ' + school.id;
+    document.getElementById('adminInfoDisplay').textContent = '👤 Admin: ' + (user.username || 'Admin');
+    document.getElementById('schoolNameDisplay').textContent = school.name || 'N/A';
+    document.getElementById('schoolEmailDisplay').textContent = school.email || 'No email';
+    document.getElementById('schoolAvatar').textContent = school.name ? school.name.charAt(0).toUpperCase() : '🏫';
+    
+    document.getElementById('detailSchoolName').textContent = school.name || 'N/A';
+    document.getElementById('detailLocation').textContent = school.location || 'N/A';
+    document.getElementById('detailPhone').textContent = school.phone || 'N/A';
+    document.getElementById('detailEmail').textContent = school.email || 'N/A';
+    document.getElementById('detailType').textContent = school.type || 'N/A';
+    document.getElementById('detailRegistered').textContent = school.createdAt ? new Date(school.createdAt).toLocaleDateString() : 'N/A';
+
+    const studentsRes = await apiCall('/students');
+    const teachersRes = await apiCall('/teachers');
+    const reportsRes = await apiCall('/reports');
+
+    const students = studentsRes.success ? studentsRes.students : [];
+    const teachers = teachersRes.success ? teachersRes.teachers : [];
+    const reports = reportsRes.success ? reportsRes.reports : [];
+
+    document.getElementById('miniStudents').textContent = students.length;
+    document.getElementById('miniTeachers').textContent = teachers.length;
+    document.getElementById('miniReports').textContent = reports.length;
+
+    if (reports.length > 0) {
+        const avg = reports.reduce((sum, r) => sum + r.score, 0) / reports.length;
+        document.getElementById('miniAvgScore').textContent = Math.round(avg) + '%';
+    } else {
+        document.getElementById('miniAvgScore').textContent = 'N/A';
+    }
+
+    const recentList = document.getElementById('recentStudentsList');
+    if (students.length === 0) {
+        recentList.innerHTML = `
+            <p style="color: var(--text-muted); text-align: center; padding: 1rem;">
+                No students registered yet.
+                <a href="registration.html" style="color: #60A5FA;">Register your first student</a>
+            </p>
+        `;
+    } else {
+        recentList.innerHTML = students.slice(0, 10).map(s => `
+            <div class="student-item">
+                <div class="info">
+                    <span class="name">👶 ${s.fullName || s.childFirstName + ' ' + s.childLastName}</span>
+                    <span class="grade">Grade ${s.grade}</span>
+                </div>
+                <div>
+                    <span class="status ${s.verified ? 'active' : 'pending'}">
+                        ${s.verified ? '✅ Active' : '⏳ Pending'}
+                    </span>
+                    <button class="btn-sm primary" onclick="viewStudentProgress('${s.id}')">📊 View</button>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function viewStudentProgress(studentId) {
+    localStorage.setItem('selectedChildId', studentId);
+    window.location.href = 'progress.html';
+}
+
+// ============================================================
+// ===== SCHOOL PROGRESS PAGE FUNCTIONS =====
+// ============================================================
+async function loadSchoolProgress() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const studentsRes = await apiCall('/students');
+    const reportsRes = await apiCall('/reports');
+    const testsRes = await apiCall('/test-results');
+
+    const students = studentsRes.success ? studentsRes.students : [];
+    const reports = reportsRes.success ? reportsRes.reports : [];
+    const tests = testsRes.success ? testsRes.results : [];
+
+    const allAssessments = [...reports, ...tests];
+
+    document.getElementById('totalStudents').textContent = students.length;
+
+    if (allAssessments.length > 0) {
+        const allScores = allAssessments.map(a => a.score);
+        const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+        const passCount = allScores.filter(s => s >= 70).length;
+        const passRate = (passCount / allScores.length) * 100;
+
+        document.getElementById('overallAvg').textContent = Math.round(avg) + '%';
+        document.getElementById('overallPassRate').textContent = Math.round(passRate) + '%';
+
+        const subjectScores = {};
+        allAssessments.forEach(a => {
+            if (!subjectScores[a.subject]) subjectScores[a.subject] = [];
+            subjectScores[a.subject].push(a.score);
+        });
+        
+        let bestSubject = '-';
+        let bestAvg = 0;
+        for (const [subject, scores] of Object.entries(subjectScores)) {
+            const subAvg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            if (subAvg > bestAvg) {
+                bestAvg = subAvg;
+                bestSubject = subject;
+            }
+        }
+        document.getElementById('bestSubject').textContent = bestSubject;
+    } else {
+        document.getElementById('overallAvg').textContent = 'N/A';
+        document.getElementById('overallPassRate').textContent = 'N/A';
+        document.getElementById('bestSubject').textContent = '-';
+    }
+
+    loadGradePerformance(students, allAssessments);
+    loadSubjectPerformance(allAssessments);
+    loadAllStudents(students, allAssessments);
+}
+
+function loadGradePerformance(students, assessments) {
+    const container = document.getElementById('gradePerformance');
+    
+    const gradeGroups = {};
+    students.forEach(s => {
+        const grade = s.grade || 'Unknown';
+        if (!gradeGroups[grade]) gradeGroups[grade] = [];
+        gradeGroups[grade].push(s);
+    });
+
+    const gradeData = {};
+    Object.keys(gradeGroups).forEach(grade => {
+        const studentIds = gradeGroups[grade].map(s => s.id);
+        const gradeAssessments = assessments.filter(a => studentIds.includes(a.studentId || a.childId));
+        
+        if (gradeAssessments.length > 0) {
+            const scores = gradeAssessments.map(a => a.score);
+            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            const passCount = scores.filter(s => s >= 70).length;
+            const passRate = (passCount / scores.length) * 100;
+            gradeData[grade] = { avg, passRate, students: gradeGroups[grade].length };
+        } else {
+            gradeData[grade] = { avg: 0, passRate: 0, students: gradeGroups[grade].length };
+        }
+    });
+
+    if (Object.keys(gradeData).length === 0) {
+        container.innerHTML = `
+            <p style="color: var(--text-muted); text-align: center; width: 100%;">
+                No grade data available yet.
+            </p>
+        `;
+        return;
+    }
+
+    const sortedGrades = Object.keys(gradeData).sort((a, b) => parseInt(a) - parseInt(b));
+
+    container.innerHTML = sortedGrades.map(grade => {
+        const data = gradeData[grade];
+        const pass = data.avg >= 70;
+        return `
+            <div class="grade-card">
+                <div class="grade-name">Grade ${grade}</div>
+                <div class="score ${pass ? 'pass' : 'fail'}">${Math.round(data.avg)}%</div>
+                <div class="students-count">👨‍🎓 ${data.students} students • ✅ ${Math.round(data.passRate)}% pass</div>
+                <div class="progress-bar">
+                    <div class="fill" style="width: ${Math.min(100, data.avg)}%;"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function loadSubjectPerformance(assessments) {
+    const container = document.getElementById('subjectPerformance');
+    
+    const subjectData = {};
+    assessments.forEach(a => {
+        if (!subjectData[a.subject]) subjectData[a.subject] = [];
+        subjectData[a.subject].push(a.score);
+    });
+
+    if (Object.keys(subjectData).length === 0) {
+        container.innerHTML = `
+            <p style="color: var(--text-muted); text-align: center; width: 100%;">
+                No subject data available yet.
+            </p>
+        `;
+        return;
+    }
+
+    const subjectIcons = {
+        'English': '📖',
+        'Mathematics': '🔢',
+        'Setswana': '🗣️',
+        'Science': '🔬',
+        'Environmental Science': '🌍',
+        'Cultural Studies': '🎭',
+        'Creative Arts': '🎨',
+        'Computer Studies': '💻',
+        'Social Studies': '📚'
+    };
+
+    container.innerHTML = Object.entries(subjectData).map(([subject, scores]) => {
+        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        const pass = avg >= 70;
+        const icon = subjectIcons[subject] || '📚';
+        return `
+            <div class="subject-card">
+                <div class="subject-icon">${icon}</div>
+                <div class="subject-name">${subject}</div>
+                <div class="subject-score ${pass ? 'pass' : 'fail'}">${Math.round(avg)}%</div>
+                <div class="subject-details">📝 ${scores.length} assessments</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function loadAllStudents(students, assessments) {
+    const tbody = document.getElementById('allStudentsTable');
+    
+    if (students.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center; color: var(--text-muted);">
+                    No students registered yet.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = students.map(s => {
+        const studentAssessments = assessments.filter(a => (a.studentId || a.childId) === s.id);
+        let avg = 0;
+        let subjects = 0;
+        
+        if (studentAssessments.length > 0) {
+            const scores = studentAssessments.map(a => a.score);
+            avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            subjects = [...new Set(studentAssessments.map(a => a.subject))].length;
+        }
+
+        const pass = avg >= 70;
+        const trend = avg >= 75 ? '📈 Improving' : avg >= 50 ? '➖ Stable' : '📉 Needs Support';
+        const trendClass = avg >= 75 ? 'trend-up' : avg >= 50 ? 'trend-stable' : 'trend-down';
+
+        return `
+            <tr>
+                <td><strong>${s.fullName || s.childFirstName + ' ' + s.childLastName}</strong></td>
+                <td>Grade ${s.grade}</td>
+                <td>${subjects || 0}</td>
+                <td class="${pass ? 'score-pass' : 'score-fail'}">${studentAssessments.length > 0 ? Math.round(avg) + '%' : 'N/A'}</td>
+                <td><span class="status-badge ${s.verified ? 'active' : 'pending'}">${s.verified ? '✅ Active' : '⏳ Pending'}</span></td>
+                <td class="${trendClass}">${studentAssessments.length > 0 ? trend : 'No data'}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 // ============================================================
